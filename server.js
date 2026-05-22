@@ -7,30 +7,50 @@ const cors = require("cors")
 
 const app = express()
 
+/* =========================
+   MIDDLEWARE
+========================= */
+
 app.use(cors({
   origin: "*"
 }))
-app.get("/",(req,res)=>{
+
+app.use(express.json())
+
+/* =========================
+   ROOT
+========================= */
+
+app.get("/", (req, res) => {
 
   res.json({
-    success:true,
-    message:"BinMail API Running"
+    success: true,
+    message: "BinMail API Running"
   })
 
 })
-app.use(express.json())
 
 /* =========================
    MONGODB CONNECT
 ========================= */
 
-mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-  console.log("MongoDB Connected")
-})
-.catch((err) => {
-  console.log(err)
-})
+async function connectDB(){
+
+  try{
+
+    await mongoose.connect(process.env.MONGO_URI)
+
+    console.log("MongoDB Connected")
+
+  }catch(err){
+
+    console.log("Mongo Error:", err)
+
+  }
+
+}
+
+connectDB()
 
 /* =========================
    USER MODEL
@@ -111,11 +131,9 @@ app.post("/api/register", async(req,res)=>{
 
     const newUser =
     new User({
-
       username,
       email,
       password:hashedPassword
-
     })
 
     await newUser.save()
@@ -271,7 +289,7 @@ app.get("/api/user/:email", async(req,res)=>{
 ========================= */
 
 const PORT =
-process.env.PORT || 5000
+process.env.PORT || 8080
 
 app.listen(PORT,()=>{
 
