@@ -7,7 +7,17 @@ const cors = require("cors")
 
 const app = express()
 
-app.use(cors())
+app.use(cors({
+  origin: "*"
+}))
+app.get("/",(req,res)=>{
+
+  res.json({
+    success:true,
+    message:"BinMail API Running"
+  })
+
+})
 app.use(express.json())
 
 /* =========================
