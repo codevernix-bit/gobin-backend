@@ -31,28 +31,6 @@ app.get("/", (req, res) => {
 })
 
 /* =========================
-   MONGODB CONNECT
-========================= */
-
-async function connectDB(){
-
-  try{
-
-    await mongoose.connect(process.env.MONGO_URI)
-
-    console.log("MongoDB Connected")
-
-  }catch(err){
-
-    console.log("Mongo Error:", err)
-
-  }
-
-}
-
-connectDB()
-
-/* =========================
    USER MODEL
 ========================= */
 
@@ -285,16 +263,34 @@ app.get("/api/user/:email", async(req,res)=>{
 })
 
 /* =========================
-   SERVER
+   START SERVER
 ========================= */
 
-const PORT =
-process.env.PORT || 8080
+async function startServer(){
 
-app.listen(PORT,()=>{
+  try{
 
-  console.log(
-    `Server running on port ${PORT}`
-  )
+    await mongoose.connect(process.env.MONGO_URI)
 
-})
+    console.log("MongoDB Connected")
+
+    const PORT =
+    process.env.PORT || 8080
+
+    app.listen(PORT,()=>{
+
+      console.log(
+        `Server running on port ${PORT}`
+      )
+
+    })
+
+  }catch(err){
+
+    console.log("Server Error:", err)
+
+  }
+
+}
+
+startServer()
