@@ -1,918 +1,376 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>BinMail Inbox</title>
-
   <link rel="icon" type="image/png" href="assets/logo.png">
-
-  <!-- FONT -->
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
-    rel="stylesheet"
-  >
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
   <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+    body{background:#f5f7fb;height:100vh;overflow:hidden;display:flex}
+    .sidebar{width:260px;background:white;border-right:1px solid #e5e7eb;padding:22px 18px;display:flex;flex-direction:column}
+    .logo{font-size:36px;font-weight:600;letter-spacing:-2px;margin-bottom:28px;user-select:none}
+    .g{color:#4285F4}.o{color:#EA4335}.b{color:#34A853}.i{color:#FBBC05}.n{color:#7E57FF}
+    .compose-btn{background:#4285F4;color:white;border:none;padding:14px;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:28px;transition:.2s ease;box-shadow:0 8px 18px rgba(66,133,244,.18)}
+    .compose-btn:hover{opacity:.92}
+    .menu{display:flex;flex-direction:column;gap:8px}
+    .menu a{text-decoration:none;color:#374151;padding:13px 16px;border-radius:12px;font-size:15px;transition:.2s ease;cursor:pointer}
+    .menu a:hover{background:#f3f7ff;color:#4285F4}
+    .menu .active{background:#e8f0fe;color:#4285F4;font-weight:500}
+    .profile{margin-top:auto;padding-top:18px;border-top:1px solid #e5e7eb}
+    .profile-name{font-size:15px;font-weight:600;color:#202124}
+    .profile-email{font-size:13px;color:#5f6368;margin-top:3px}
+    .main{flex:1;display:flex;flex-direction:column}
+    .topbar{height:74px;background:white;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 24px;gap:18px}
+    .search-box{flex:1;background:#f3f4f6;border-radius:14px;padding:12px 16px;display:flex;align-items:center}
+    .search-box input{border:none;background:transparent;outline:none;width:100%;font-size:14px;margin-left:10px}
+    .title-badge{font-size:15px;color:#4285F4;font-weight:600;white-space:nowrap}
+    .mail-container{flex:1;overflow-y:auto;padding:20px}
+    .mail-item{background:white;border-radius:18px;padding:18px 20px;margin-bottom:14px;transition:.2s ease;cursor:pointer;border:1px solid transparent}
+    .mail-item:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.06);border-color:#dbeafe}
+    .mail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .mail-name{font-size:15px;font-weight:600;color:#202124}
+    .mail-time{font-size:12px;color:#6b7280}
+    .mail-subject{font-size:14px;font-weight:500;color:#374151;margin-bottom:6px}
+    .mail-preview{font-size:13px;color:#6b7280;line-height:1.5;white-space:pre-wrap}
+    .empty{background:white;border-radius:18px;padding:28px;text-align:center;color:#6b7280}
+    .loading{background:white;border-radius:18px;padding:28px;text-align:center;color:#4285F4}
 
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Poppins',sans-serif;
+    .compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:9999;padding:16px}
+    .compose-box{width:100%;max-width:520px;background:white;border-radius:20px;padding:24px}
+    .compose-title{font-size:22px;font-weight:600;margin-bottom:20px}
+    .compose-box input,.compose-box textarea{width:100%;border:1px solid #ddd;border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;outline:none}
+    .compose-box textarea{height:180px;resize:none}
+    .compose-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+    .close-btn,.send-btn,.draft-btn{border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600}
+    .close-btn{background:#e5e7eb}
+    .draft-btn{background:#f59e0b;color:white}
+    .send-btn{background:#4285F4;color:white}
+
+    @media(max-width:768px){
+      body{flex-direction:column;height:auto;overflow:auto}
+      .sidebar{width:100%;height:auto;padding:16px;border-right:none;border-bottom:1px solid #eee;display:flex}
+      .logo{font-size:42px;margin-bottom:18px}
+      .compose-btn{width:100%;margin-bottom:18px}
+      .menu{display:flex;flex-direction:row;gap:10px;overflow-x:auto;padding-bottom:10px}
+      .menu a{min-width:120px;text-align:center;flex:none}
+      .profile{margin-top:20px}
+      .main{width:100%}
+      .topbar{padding:14px;height:auto}
+      .search-box{width:100%}
+      .mail-container{padding:14px}
+      .mail-item{padding:16px}
+      .mail-subject{font-size:16px}
+      .mail-preview{font-size:14px}
+      .compose-box{width:92%;padding:18px}
+      .compose-box textarea{height:140px}
     }
-
-    body{
-      background:#f5f7fb;
-      height:100vh;
-      overflow:hidden;
-      display:flex;
-    }
-
-    /* SIDEBAR */
-
-    .sidebar{
-
-      width:260px;
-
-      background:white;
-
-      border-right:1px solid #e5e7eb;
-
-      padding:22px 18px;
-
-      display:flex;
-      flex-direction:column;
-
-    }
-
-    .logo{
-
-      font-size:36px;
-      font-weight:600;
-      letter-spacing:-2px;
-
-      margin-bottom:28px;
-
-      user-select:none;
-
-    }
-
-    .g{ color:#4285F4; }
-    .o{ color:#EA4335; }
-    .b{ color:#34A853; }
-    .i{ color:#FBBC05; }
-    .n{ color:#7E57FF; }
-
-    /* COMPOSE */
-
-    .compose-btn{
-
-      background:#4285F4;
-
-      color:white;
-
-      border:none;
-
-      padding:14px;
-
-      border-radius:14px;
-
-      font-size:15px;
-
-      font-weight:500;
-
-      cursor:pointer;
-
-      margin-bottom:28px;
-
-      transition:0.2s ease;
-
-      box-shadow:
-      0 8px 18px rgba(66,133,244,0.18);
-
-    }
-
-    .compose-btn:hover{
-      opacity:0.92;
-    }
-
-    /* MENU */
-
-    .menu{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .menu a{
-
-      text-decoration:none;
-
-      color:#374151;
-
-      padding:13px 16px;
-
-      border-radius:12px;
-
-      font-size:15px;
-
-      transition:0.2s ease;
-
-    }
-
-    .menu a:hover{
-      background:#f3f7ff;
-      color:#4285F4;
-    }
-
-    .menu .active{
-      background:#e8f0fe;
-      color:#4285F4;
-      font-weight:500;
-    }
-
-    /* PROFILE */
-
-    .profile{
-
-      margin-top:auto;
-
-      padding-top:18px;
-
-      border-top:1px solid #e5e7eb;
-
-    }
-
-    .profile-name{
-      font-size:15px;
-      font-weight:600;
-      color:#202124;
-    }
-
-    .profile-email{
-      font-size:13px;
-      color:#5f6368;
-      margin-top:3px;
-    }
-
-    /* MAIN */
-
-    .main{
-
-      flex:1;
-
-      display:flex;
-      flex-direction:column;
-
-    }
-
-    /* TOPBAR */
-
-    .topbar{
-
-      height:74px;
-
-      background:white;
-
-      border-bottom:1px solid #e5e7eb;
-
-      display:flex;
-      align-items:center;
-
-      padding:0 24px;
-
-      gap:18px;
-
-    }
-
-    .search-box{
-
-      flex:1;
-
-      background:#f3f4f6;
-
-      border-radius:14px;
-
-      padding:12px 16px;
-
-      display:flex;
-      align-items:center;
-
-    }
-
-    .search-box input{
-
-      border:none;
-
-      background:transparent;
-
-      outline:none;
-
-      width:100%;
-
-      font-size:14px;
-
-      margin-left:10px;
-
-    }
-
-    /* MAIL LIST */
-
-    .mail-container{
-
-      flex:1;
-
-      overflow-y:auto;
-
-      padding:20px;
-
-    }
-
-    .mail-item{
-
-      background:white;
-
-      border-radius:18px;
-
-      padding:18px 20px;
-
-      margin-bottom:14px;
-
-      transition:0.2s ease;
-
-      cursor:pointer;
-
-      border:1px solid transparent;
-
-    }
-
-    .mail-item:hover{
-
-      transform:translateY(-1px);
-
-      box-shadow:
-      0 6px 20px rgba(0,0,0,0.06);
-
-      border-color:#dbeafe;
-
-    }
-
-    .mail-top{
-
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-
-      margin-bottom:8px;
-
-    }
-
-    .mail-name{
-
-      font-size:15px;
-      font-weight:600;
-      color:#202124;
-
-    }
-
-    .mail-time{
-
-      font-size:12px;
-      color:#6b7280;
-
-    }
-
-    .mail-subject{
-
-      font-size:14px;
-      font-weight:500;
-      color:#374151;
-
-      margin-bottom:6px;
-
-    }
-
-    .mail-preview{
-
-      font-size:13px;
-      color:#6b7280;
-
-      line-height:1.5;
-
-    }
-
-    /* =========================
-   MOBILE RESPONSIVE
-========================= */
-
-@media(max-width:768px){
-
-  body{
-
-    flex-direction:column;
-    height:auto;
-    overflow:auto;
-
-  }
-
-  .sidebar{
-
-    width:100%;
-    height:auto;
-
-    padding:16px;
-
-    border-right:none;
-    border-bottom:1px solid #eee;
-
-    display:flex;
-
-  }
-
-  .logo{
-
-    font-size:42px;
-    margin-bottom:18px;
-
-  }
-
-  .compose-btn{
-
-    width:100%;
-    margin-bottom:18px;
-
-  }
-
-  .menu{
-
-    display:flex;
-    flex-direction:row;
-
-    gap:10px;
-
-    overflow-x:auto;
-
-    padding-bottom:10px;
-
-  }
-
-  .menu a{
-
-    min-width:120px;
-    text-align:center;
-    flex:none;
-
-  }
-
-  .profile{
-
-    margin-top:20px;
-  }
-
-  .main{
-
-    width:100%;
-  }
-
-  .topbar{
-
-    padding:14px;
-    height:auto;
-
-  }
-
-  .search-box{
-
-    width:100%;
-  }
-
-  .mail-container{
-
-    padding:14px;
-  }
-
-  .mail-item{
-
-    padding:16px;
-  }
-
-  .mail-subject{
-
-    font-size:16px;
-  }
-
-  .mail-preview{
-
-    font-size:14px;
-  }
-
-  .compose-box{
-
-    width:92%;
-    padding:18px;
-
-  }
-
-  .compose-box textarea{
-
-    height:140px;
-
-  }
-
-}
-
   </style>
-
 </head>
-
 <body>
 
-  <!-- SIDEBAR -->
-
   <div class="sidebar">
-
-    <!-- LOGO -->
-
     <div class="logo">
-
-      <span class="g">b</span>
-      <span class="o">i</span>
-      <span class="b">n</span>
-      <span class="i">m</span>
-      <span class="n">ail</span>
-
+      <span class="g">b</span><span class="o">i</span><span class="b">n</span><span class="i">m</span><span class="n">ail</span>
     </div>
 
-    <!-- COMPOSE -->
-
-    <button class="compose-btn" onclick="openCompose()">
-      ✉️ Compose
-    </button>
-
-    <!-- MENU -->
+    <button class="compose-btn" onclick="openCompose()">✉️ Compose</button>
 
     <div class="menu">
-
-      <a href="#" class="active">
-        📥 Inbox
-      </a>
-
-      <a href="#">
-        📤 Sent
-      </a>
-
-      <a href="#">
-        📝 Draft
-      </a>
-
-      <a href="#">
-        ⭐ Starred
-      </a>
-
-      <a href="#">
-        🗑 Trash
-      </a>
-
+      <a data-folder="inbox" class="active">📥 Inbox</a>
+      <a data-folder="sent">📤 Sent</a>
+      <a data-folder="drafts">📝 Draft</a>
+      <a data-folder="starred">⭐ Starred</a>
+      <a data-folder="trash">🗑 Trash</a>
     </div>
-
-    <!-- PROFILE -->
 
     <div class="profile">
-
-      <div class="profile-name">
-        User BinMail
-      </div>
-
-      <div class="profile-email">
-        user@gobin.id
-      </div>
-
+      <div class="profile-name">User BinMail</div>
+      <div class="profile-email">user@gobin.id</div>
     </div>
-
   </div>
-
-  <!-- MAIN -->
 
   <div class="main">
-
-    <!-- TOPBAR -->
-
     <div class="topbar">
-
+      <div class="title-badge" id="folderTitle">Inbox</div>
       <div class="search-box">
-
         🔍
-
-        <input
-          type="text"
-          placeholder="Search mail..."
-        >
-
+        <input type="text" id="searchInput" placeholder="Search mail...">
       </div>
-
     </div>
 
-    <!-- MAIL LIST -->
-
-    <div class="mail-container">
-
-      <!-- ITEM -->
-
-      <div class="mail-item">
-
-        <div class="mail-top">
-
-          <div class="mail-name">
-            GoBin Team
-          </div>
-
-          <div class="mail-time">
-            08:24
-          </div>
-
-        </div>
-
-        <div class="mail-subject">
-          Welcome to BinMail 🚀
-        </div>
-
-        <div class="mail-preview">
-          Thank you for creating your BinMail account powered by GoBin.
-        </div>
-
-      </div>
-
-      <!-- ITEM -->
-
-      <div class="mail-item">
-
-        <div class="mail-top">
-
-          <div class="mail-name">
-            Security Alert
-          </div>
-
-          <div class="mail-time">
-            Yesterday
-          </div>
-
-        </div>
-
-        <div class="mail-subject">
-          New login detected
-        </div>
-
-        <div class="mail-preview">
-          A new login to your BinMail account was detected from Indonesia.
-        </div>
-
-      </div>
-
-      <!-- ITEM -->
-
-      <div class="mail-item">
-
-        <div class="mail-top">
-
-          <div class="mail-name">
-            BinPay
-          </div>
-
-          <div class="mail-time">
-            2 days ago
-          </div>
-
-        </div>
-
-        <div class="mail-subject">
-          BinPay integration is now available
-        </div>
-
-        <div class="mail-preview">
-          Connect your BinMail with BinPay for secure payments and identity.
-        </div>
-
-      </div>
-
-    </div>
-
+    <div class="mail-container" id="mailContainer"></div>
   </div>
 
-  <script>
+  <div class="compose-modal" id="composeModal">
+    <div class="compose-box">
+      <div class="compose-title">New Message</div>
 
-  /* =========================
-     GET USER
-  ========================= */
+      <input type="email" id="to" placeholder="To: contoh@gobin.id">
+      <input type="text" id="subject" placeholder="Subject">
+      <textarea id="message" placeholder="Write message..."></textarea>
 
-  const user =
-  JSON.parse(
-    localStorage.getItem("binmailUser")
-  )
-
-  /* =========================
-     CHECK LOGIN
-  ========================= */
-
-  if(!user){
-
-    window.location.href =
-    "/mail"
-
-  }
-
-  /* =========================
-     SHOW USER
-  ========================= */
-
-  document.querySelector(
-    ".profile-name"
-  ).innerText =
-  user.username
-
-  document.querySelector(
-    ".profile-email"
-  ).innerText =
-  user.email
-
-  /* =========================
-     LOGOUT
-  ========================= */
-
-  const logoutBtn =
-  document.createElement("button")
-
-  logoutBtn.innerText =
-  "Logout"
-
-  logoutBtn.style.marginTop = "14px"
-  logoutBtn.style.width = "100%"
-  logoutBtn.style.padding = "12px"
-  logoutBtn.style.border = "none"
-  logoutBtn.style.borderRadius = "12px"
-  logoutBtn.style.background = "#ef4444"
-  logoutBtn.style.color = "white"
-  logoutBtn.style.cursor = "pointer"
-
-  logoutBtn.onclick = ()=>{
-
-    localStorage.removeItem(
-      "binmailUser"
-    )
-
-    window.location.href =
-    "/mail"
-
-  }
-
-  document.querySelector(
-    ".profile"
-  ).appendChild(logoutBtn)
-
-</script>
-
-<!-- COMPOSE MODAL -->
-
-<div class="compose-modal" id="composeModal">
-
-  <div class="compose-box">
-
-    <div class="compose-title">
-      New Message
+      <div class="compose-actions">
+        <button class="close-btn" onclick="closeCompose()">Cancel</button>
+        <button class="draft-btn" onclick="saveDraft()">Save Draft</button>
+        <button class="send-btn" onclick="sendEmail()">Send</button>
+      </div>
     </div>
-
-    <input
-      type="email"
-      id="to"
-      placeholder="To"
-    >
-
-    <input
-      type="text"
-      id="subject"
-      placeholder="Subject"
-    >
-
-    <textarea
-      id="message"
-      placeholder="Write message..."
-    ></textarea>
-
-    <div class="compose-actions">
-
-      <button
-        class="close-btn"
-        onclick="closeCompose()"
-      >
-        Cancel
-      </button>
-
-      <button
-        class="send-btn"
-        onclick="sendEmail()"
-      >
-        Send
-      </button>
-
-    </div>
-
   </div>
-
-</div>
-
-<style>
-
-.compose-modal{
-
-  position:fixed;
-  inset:0;
-
-  background:rgba(0,0,0,0.4);
-
-  display:none;
-
-  justify-content:center;
-  align-items:center;
-
-  z-index:9999;
-
-}
-
-.compose-box{
-
-  width:100%;
-  max-width:520px;
-
-  background:white;
-
-  border-radius:20px;
-
-  padding:24px;
-
-}
-
-.compose-title{
-
-  font-size:22px;
-  font-weight:600;
-
-  margin-bottom:20px;
-
-}
-
-.compose-box input,
-.compose-box textarea{
-
-  width:100%;
-
-  border:1px solid #ddd;
-
-  border-radius:12px;
-
-  padding:14px;
-
-  margin-bottom:14px;
-
-  font-size:14px;
-
-  outline:none;
-
-}
-
-.compose-box textarea{
-
-  height:180px;
-  resize:none;
-
-}
-
-.compose-actions{
-
-  display:flex;
-  justify-content:flex-end;
-  gap:12px;
-
-}
-
-.close-btn,
-.send-btn{
-
-  border:none;
-
-  padding:12px 20px;
-
-  border-radius:12px;
-
-  cursor:pointer;
-
-  font-weight:600;
-
-}
-
-.close-btn{
-
-  background:#e5e7eb;
-
-}
-
-.send-btn{
-
-  background:#4285F4;
-  color:white;
-
-}
-
-</style>
 
 <script>
+const API = "https://gobin-backend-production.up.railway.app"
 
-const API =
-"https://gobin-backend-production.up.railway.app"
+const user = JSON.parse(localStorage.getItem("binmailUser"))
+
+let currentFolder = "inbox"
+let currentEmails = []
+
+if(!user){
+  window.location.href = "/mail"
+}
+
+document.querySelector(".profile-name").innerText = user.username || "User BinMail"
+document.querySelector(".profile-email").innerText = user.email || "user@gobin.id"
+
+const logoutBtn = document.createElement("button")
+logoutBtn.innerText = "Logout"
+logoutBtn.style.marginTop = "14px"
+logoutBtn.style.width = "100%"
+logoutBtn.style.padding = "12px"
+logoutBtn.style.border = "none"
+logoutBtn.style.borderRadius = "12px"
+logoutBtn.style.background = "#ef4444"
+logoutBtn.style.color = "white"
+logoutBtn.style.cursor = "pointer"
+
+logoutBtn.onclick = () => {
+  localStorage.removeItem("binmailUser")
+  window.location.href = "/mail"
+}
+
+document.querySelector(".profile").appendChild(logoutBtn)
+
+document.querySelectorAll(".menu a").forEach(link => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault()
+
+    const folder = link.dataset.folder
+
+    setActiveMenu(folder)
+    loadMail(folder)
+  })
+})
+
+document.getElementById("searchInput").addEventListener("input", function(){
+  renderEmails(currentEmails, this.value)
+})
+
+function setActiveMenu(folder){
+  document.querySelectorAll(".menu a").forEach(a => a.classList.remove("active"))
+
+  const activeLink = document.querySelector(`.menu a[data-folder="${folder}"]`)
+
+  if(activeLink){
+    activeLink.classList.add("active")
+  }
+
+  const labels = {
+    inbox:"Inbox",
+    sent:"Sent",
+    drafts:"Draft",
+    starred:"Starred",
+    trash:"Trash"
+  }
+
+  document.getElementById("folderTitle").innerText = labels[folder] || "Inbox"
+
+  currentFolder = folder
+}
+
+async function loadMail(folder = "inbox"){
+  const box = document.getElementById("mailContainer")
+
+  box.innerHTML = `<div class="loading">Loading ${folder}...</div>`
+
+  try{
+    const res = await fetch(`${API}/api/${folder}/${encodeURIComponent(user.email)}`)
+    const data = await res.json()
+
+    if(!data.success){
+      box.innerHTML = `<div class="empty">${data.message || "Gagal load email"}</div>`
+      return
+    }
+
+    currentEmails = data.emails || []
+
+    renderEmails(currentEmails)
+
+  }catch(err){
+    console.log(err)
+
+    box.innerHTML = `
+      <div class="empty">
+        Server error / API belum update.<br>
+        Cek deploy backend Railway.
+      </div>
+    `
+  }
+}
+
+function renderEmails(emails, keyword = ""){
+  const box = document.getElementById("mailContainer")
+  const q = keyword.trim().toLowerCase()
+
+  const filtered = emails.filter(mail => {
+    const text = `${mail.from} ${mail.to} ${mail.subject} ${mail.message}`.toLowerCase()
+    return text.includes(q)
+  })
+
+  if(filtered.length === 0){
+    box.innerHTML = `<div class="empty">Belum ada email di folder ini.</div>`
+    return
+  }
+
+  box.innerHTML = filtered.map(mail => {
+    const name = currentFolder === "inbox" ? mail.from : mail.to
+    const time = formatTime(mail.createdAt)
+    const subject = escapeHtml(mail.subject || "No Subject")
+    const message = escapeHtml(mail.message || "")
+    const target = escapeHtml(name || "-")
+
+    return `
+      <div class="mail-item">
+        <div class="mail-top">
+          <div class="mail-name">${target}</div>
+          <div class="mail-time">${time}</div>
+        </div>
+        <div class="mail-subject">${subject}</div>
+        <div class="mail-preview">${message || "(No message)"}</div>
+      </div>
+    `
+  }).join("")
+}
+
+function formatTime(value){
+  if(!value) return ""
+
+  const date = new Date(value)
+
+  return date.toLocaleString("id-ID", {
+    day:"2-digit",
+    month:"short",
+    hour:"2-digit",
+    minute:"2-digit"
+  })
+}
+
+function escapeHtml(text){
+  return String(text).replace(/[&<>'"]/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "'":"&#39;",
+    '"':"&quot;"
+  }[c]))
+}
 
 function openCompose(){
-
-  document.getElementById(
-    "composeModal"
-  ).style.display = "flex"
-
+  document.getElementById("composeModal").style.display = "flex"
 }
 
 function closeCompose(){
+  document.getElementById("composeModal").style.display = "none"
+}
 
-  document.getElementById(
-    "composeModal"
-  ).style.display = "none"
-
+function clearCompose(){
+  document.getElementById("to").value = ""
+  document.getElementById("subject").value = ""
+  document.getElementById("message").value = ""
 }
 
 async function sendEmail(){
+  const to = document.getElementById("to").value.trim().toLowerCase()
+  const subject = document.getElementById("subject").value.trim()
+  const message = document.getElementById("message").value.trim()
 
-  const user =
-  JSON.parse(
-    localStorage.getItem(
-      "binmailUser"
-    )
-  )
-
-  const to =
-  document.getElementById("to").value
-
-  const subject =
-  document.getElementById("subject").value
-
-  const message =
-  document.getElementById("message").value
+  if(!to){
+    alert("Email tujuan wajib diisi")
+    return
+  }
 
   try{
-
-    const res =
-    await fetch(`${API}/api/send`,{
-
+    const res = await fetch(`${API}/api/send`, {
       method:"POST",
-
       headers:{
         "Content-Type":"application/json"
       },
-
       body:JSON.stringify({
-
         from:user.email,
         to,
         subject,
         message
-
       })
-
     })
 
-    const data =
-    await res.json()
+    const data = await res.json()
 
     alert(data.message)
 
     if(data.success){
-
       closeCompose()
-
+      clearCompose()
+      setActiveMenu("sent")
+      loadMail("sent")
     }
 
   }catch(err){
-
     console.log(err)
-
     alert("Server error")
-
   }
-
 }
 
+async function saveDraft(){
+  const to = document.getElementById("to").value.trim().toLowerCase()
+  const subject = document.getElementById("subject").value.trim()
+  const message = document.getElementById("message").value.trim()
+
+  try{
+    const res = await fetch(`${API}/api/drafts`, {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        from:user.email,
+        to,
+        subject,
+        message
+      })
+    })
+
+    const data = await res.json()
+
+    alert(data.message)
+
+    if(data.success){
+      closeCompose()
+      clearCompose()
+      setActiveMenu("drafts")
+      loadMail("drafts")
+    }
+
+  }catch(err){
+    console.log(err)
+    alert("Server error")
+  }
+}
+
+loadMail("inbox")
 </script>
 
 </body>

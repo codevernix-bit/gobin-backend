@@ -62,9 +62,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema)
 
-
-
-
 /* =========================
    EMAIL MODEL
 ========================= */
@@ -78,7 +75,7 @@ const emailSchema = new mongoose.Schema({
 
   to:{
     type:String,
-    required:true
+    default:""
   },
 
   subject:{
@@ -89,6 +86,11 @@ const emailSchema = new mongoose.Schema({
   message:{
     type:String,
     default:""
+  },
+
+  folder:{
+    type:String,
+    default:"inbox"
   },
 
   starred:{
@@ -108,8 +110,7 @@ const emailSchema = new mongoose.Schema({
 
 })
 
-const Email =
-mongoose.model("Email", emailSchema)
+const Email = mongoose.model("Email", emailSchema)
 
 /* =========================
    REGISTER API
@@ -264,9 +265,127 @@ app.post("/api/login", async(req,res)=>{
 
 })
 
+/* =========================
+   SEND EMAIL API
+========================= */
+
+app.post("/api/send", async(req,res)=>{
+
+  try{
+
+    const {
+      from,
+      to,
+      subject,
+      message
+    } = req.body
+
+    if(!from || !to){
+
+      return res.status(400).json({
+        success:false,
+        message:"Data tidak lengkap"
+      })
+
+    }
+
+    const receiver =
+    await User.findOne({
+      email:to
+    })
+
+    if(!receiver){
+
+      return res.status(400).json({
+        success:false,
+        message:"Email tujuan tidak ditemukan"
+      })
+
+    }
+
+    const newEmail =
+    new Email({
+
+      from,
+      to,
+      subject,
+      message,
+      folder:"inbox"
+
+    })
+
+    await newEmail.save()
+
+    res.json({
+
+      success:true,
+      message:"Email berhasil dikirim"
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
 
 /* =========================
-   GET INBOX API
+   SAVE DRAFT
+========================= */
+
+app.post("/api/drafts", async(req,res)=>{
+
+  try{
+
+    const {
+      from,
+      to,
+      subject,
+      message
+    } = req.body
+
+    const draft =
+    new Email({
+
+      from,
+      to,
+      subject,
+      message,
+      folder:"drafts"
+
+    })
+
+    await draft.save()
+
+    res.json({
+
+      success:true,
+      message:"Draft berhasil disimpan"
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
+/* =========================
+   GET INBOX
 ========================= */
 
 app.get("/api/inbox/:email", async(req,res)=>{
@@ -276,7 +395,8 @@ app.get("/api/inbox/:email", async(req,res)=>{
     const emails =
     await Email.find({
 
-      to:req.params.email
+      to:req.params.email,
+      folder:"inbox"
 
     }).sort({
       createdAt:-1
@@ -303,57 +423,27 @@ app.get("/api/inbox/:email", async(req,res)=>{
 })
 
 /* =========================
-   SEND EMAIL API
+   GET SENT
 ========================= */
 
-app.post("/api/send", async(req,res)=>{
+app.get("/api/sent/:email", async(req,res)=>{
 
   try{
 
-    const {
-      from,
-      to,
-      subject,
-      message
-    } = req.body
+    const emails =
+    await Email.find({
 
-    if(!from || !to){
+      from:req.params.email,
+      folder:"inbox"
 
-      return res.status(400).json({
-        success:false,
-        message:"Data tidak lengkap"
-      })
-
-    }
-
-    const receiver =
-    await User.findOne({ email:to })
-
-    if(!receiver){
-
-      return res.status(400).json({
-        success:false,
-        message:"Email tujuan tidak ditemukan"
-      })
-
-    }
-
-    const newEmail =
-    new Email({
-
-      from,
-      to,
-      subject,
-      message
-
+    }).sort({
+      createdAt:-1
     })
-
-    await newEmail.save()
 
     res.json({
 
       success:true,
-      message:"Email berhasil dikirim"
+      emails
 
     })
 
@@ -370,6 +460,127 @@ app.post("/api/send", async(req,res)=>{
 
 })
 
+/* =========================
+   GET DRAFTS
+========================= */
+
+app.get("/api/drafts/:email", async(req,res)=>{
+
+  try{
+
+    const emails =
+    await Email.find({
+
+      from:req.params.email,
+      folder:"drafts"
+
+    }).sort({
+      createdAt:-1
+    })
+
+    res.json({
+
+      success:true,
+      emails
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
+/* =========================
+   STARRED
+========================= */
+
+app.get("/api/starred/:email", async(req,res)=>{
+
+  try{
+
+    const emails =
+    await Email.find({
+
+      $or:[
+        { to:req.params.email },
+        { from:req.params.email }
+      ],
+
+      starred:true
+
+    }).sort({
+      createdAt:-1
+    })
+
+    res.json({
+
+      success:true,
+      emails
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
+/* =========================
+   TRASH
+========================= */
+
+app.get("/api/trash/:email", async(req,res)=>{
+
+  try{
+
+    const emails =
+    await Email.find({
+
+      $or:[
+        { to:req.params.email },
+        { from:req.params.email }
+      ],
+
+      trash:true
+
+    }).sort({
+      createdAt:-1
+    })
+
+    res.json({
+
+      success:true,
+      emails
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
 
 /* =========================
    USER PROFILE API
@@ -426,14 +637,16 @@ async function startServer(){
 
   try{
 
-    await mongoose.connect(process.env.MONGO_URI)
+    await mongoose.connect(
+      process.env.MONGO_URI
+    )
 
     console.log("MongoDB Connected")
 
     const PORT =
     process.env.PORT || 8080
 
-    app.listen(PORT, "0.0.0.0", ()=>{
+    app.listen(PORT,"0.0.0.0",()=>{
 
       console.log(
         `Server running on port ${PORT}`
@@ -443,7 +656,10 @@ async function startServer(){
 
   }catch(err){
 
-    console.log("Server Error:", err)
+    console.log(
+      "Server Error:",
+      err
+    )
 
   }
 
