@@ -136,10 +136,132 @@ app.post("/api/register", async(req,res)=>{
 })
 
 /* =========================
+   LOGIN API
+========================= */
+
+app.post("/api/login", async(req,res)=>{
+
+  try{
+
+    const {
+      email,
+      password
+    } = req.body
+
+    if(!email || !password){
+
+      return res.status(400).json({
+        success:false,
+        message:"Lengkapi data"
+      })
+
+    }
+
+    const user =
+    await User.findOne({ email })
+
+    if(!user){
+
+      return res.status(400).json({
+        success:false,
+        message:"Email tidak ditemukan"
+      })
+
+    }
+
+    const isMatch =
+    await bcrypt.compare(
+      password,
+      user.password
+    )
+
+    if(!isMatch){
+
+      return res.status(400).json({
+        success:false,
+        message:"Password salah"
+      })
+
+    }
+
+    res.json({
+
+      success:true,
+      message:"Login berhasil",
+
+      user:{
+        username:user.username,
+        email:user.email
+      }
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
+/* =========================
+   USER PROFILE API
+========================= */
+
+app.get("/api/user/:email", async(req,res)=>{
+
+  try{
+
+    const user =
+    await User.findOne({
+      email:req.params.email
+    })
+
+    if(!user){
+
+      return res.status(404).json({
+        success:false,
+        message:"User tidak ditemukan"
+      })
+
+    }
+
+    res.json({
+
+      success:true,
+
+      user:{
+        username:user.username,
+        email:user.email,
+        createdAt:user.createdAt
+      }
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
+/* =========================
    SERVER
 ========================= */
 
-const PORT = 5000
+const PORT =
+process.env.PORT || 5000
 
 app.listen(PORT,()=>{
 
