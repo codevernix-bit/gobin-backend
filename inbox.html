@@ -504,5 +504,77 @@
 
   </div>
 
+  <script>
+
+  /* =========================
+     GET USER
+  ========================= */
+
+  const user =
+  JSON.parse(
+    localStorage.getItem("binmailUser")
+  )
+
+  /* =========================
+     CHECK LOGIN
+  ========================= */
+
+  if(!user){
+
+    window.location.href =
+    "/mail"
+
+  }
+
+  /* =========================
+     SHOW USER
+  ========================= */
+
+  document.querySelector(
+    ".profile-name"
+  ).innerText =
+  user.username
+
+  document.querySelector(
+    ".profile-email"
+  ).innerText =
+  user.email
+
+  /* =========================
+     LOGOUT
+  ========================= */
+
+  const logoutBtn =
+  document.createElement("button")
+
+  logoutBtn.innerText =
+  "Logout"
+
+  logoutBtn.style.marginTop = "14px"
+  logoutBtn.style.width = "100%"
+  logoutBtn.style.padding = "12px"
+  logoutBtn.style.border = "none"
+  logoutBtn.style.borderRadius = "12px"
+  logoutBtn.style.background = "#ef4444"
+  logoutBtn.style.color = "white"
+  logoutBtn.style.cursor = "pointer"
+
+  logoutBtn.onclick = ()=>{
+
+    localStorage.removeItem(
+      "binmailUser"
+    )
+
+    window.location.href =
+    "/mail"
+
+  }
+
+  document.querySelector(
+    ".profile"
+  ).appendChild(logoutBtn)
+
+</script>
+
 </body>
 </html>

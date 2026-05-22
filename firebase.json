@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": ".",
+
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -17,6 +18,11 @@
       {
         "source": "/mail",
         "destination": "/mail.html"
+      },
+
+      {
+        "source": "/inbox",
+        "destination": "/inbox.html"
       },
 
       {

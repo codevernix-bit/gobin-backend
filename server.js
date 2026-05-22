@@ -63,6 +63,52 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema)
 
 /* =========================
+   EMAIL MODEL
+========================= */
+
+const emailSchema = new mongoose.Schema({
+
+  from:{
+    type:String,
+    required:true
+  },
+
+  to:{
+    type:String,
+    required:true
+  },
+
+  subject:{
+    type:String,
+    default:"No Subject"
+  },
+
+  message:{
+    type:String,
+    default:""
+  },
+
+  starred:{
+    type:Boolean,
+    default:false
+  },
+
+  trash:{
+    type:Boolean,
+    default:false
+  },
+
+  createdAt:{
+    type:Date,
+    default:Date.now
+  }
+
+})
+
+const Email =
+mongoose.model("Email", emailSchema)
+
+/* =========================
    REGISTER API
 ========================= */
 
@@ -214,6 +260,76 @@ app.post("/api/login", async(req,res)=>{
   }
 
 })
+
+
+/* =========================
+   SEND EMAIL API
+========================= */
+
+app.post("/api/send", async(req,res)=>{
+
+  try{
+
+    const {
+      from,
+      to,
+      subject,
+      message
+    } = req.body
+
+    if(!from || !to){
+
+      return res.status(400).json({
+        success:false,
+        message:"Data tidak lengkap"
+      })
+
+    }
+
+    const receiver =
+    await User.findOne({ email:to })
+
+    if(!receiver){
+
+      return res.status(400).json({
+        success:false,
+        message:"Email tujuan tidak ditemukan"
+      })
+
+    }
+
+    const newEmail =
+    new Email({
+
+      from,
+      to,
+      subject,
+      message
+
+    })
+
+    await newEmail.save()
+
+    res.json({
+
+      success:true,
+      message:"Email berhasil dikirim"
+
+    })
+
+  }catch(err){
+
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+
+  }
+
+})
+
 
 /* =========================
    USER PROFILE API
