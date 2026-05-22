@@ -32,13 +32,39 @@
     .mail-container{flex:1;overflow-y:auto;padding:20px}
     .mail-item{background:white;border-radius:18px;padding:18px 20px;margin-bottom:14px;transition:.2s ease;cursor:pointer;border:1px solid transparent}
     .mail-item:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.06);border-color:#dbeafe}
-    .mail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .mail-name{font-size:15px;font-weight:600;color:#202124}
-    .mail-time{font-size:12px;color:#6b7280}
+    .mail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px}
+    .mail-name{font-size:15px;font-weight:600;color:#202124;word-break:break-word}
+    .mail-time{font-size:12px;color:#6b7280;white-space:nowrap}
     .mail-subject{font-size:14px;font-weight:500;color:#374151;margin-bottom:6px}
-    .mail-preview{font-size:13px;color:#6b7280;line-height:1.5;white-space:pre-wrap}
+    .mail-preview{font-size:13px;color:#6b7280;line-height:1.5;white-space:pre-wrap;word-break:break-word}
     .empty{background:white;border-radius:18px;padding:28px;text-align:center;color:#6b7280}
     .loading{background:white;border-radius:18px;padding:28px;text-align:center;color:#4285F4}
+
+    .detail-actions{
+      display:flex;
+      gap:10px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .back-btn,
+    .reply-btn{
+      border:none;
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .back-btn{
+      background:#e5e7eb;
+      color:#111827;
+    }
+
+    .reply-btn{
+      background:#4285F4;
+      color:white;
+    }
 
     .compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:9999;padding:16px}
     .compose-box{width:100%;max-width:520px;background:white;border-radius:20px;padding:24px}
@@ -108,7 +134,7 @@
 
   <div class="compose-modal" id="composeModal">
     <div class="compose-box">
-      <div class="compose-title">New Message</div>
+      <div class="compose-title" id="composeTitle">New Message</div>
 
       <input type="email" id="to" placeholder="To: contoh@gobin.id">
       <input type="text" id="subject" placeholder="Subject">
@@ -129,6 +155,7 @@ const user = JSON.parse(localStorage.getItem("binmailUser"))
 
 let currentFolder = "inbox"
 let currentEmails = []
+let currentShownEmails = []
 
 if(!user){
   window.location.href = "/mail"
@@ -207,6 +234,7 @@ async function loadMail(folder = "inbox"){
     }
 
     currentEmails = data.emails || []
+    currentShownEmails = currentEmails
 
     renderEmails(currentEmails)
 
@@ -231,12 +259,14 @@ function renderEmails(emails, keyword = ""){
     return text.includes(q)
   })
 
+  currentShownEmails = filtered
+
   if(filtered.length === 0){
     box.innerHTML = `<div class="empty">Belum ada email di folder ini.</div>`
     return
   }
 
-  box.innerHTML = filtered.map(mail => {
+  box.innerHTML = filtered.map((mail,index) => {
     const name = currentFolder === "inbox" ? mail.from : mail.to
     const time = formatTime(mail.createdAt)
     const subject = escapeHtml(mail.subject || "No Subject")
@@ -244,7 +274,7 @@ function renderEmails(emails, keyword = ""){
     const target = escapeHtml(name || "-")
 
     return `
-      <div class="mail-item">
+      <div class="mail-item" onclick="openEmail(${index})">
         <div class="mail-top">
           <div class="mail-name">${target}</div>
           <div class="mail-time">${time}</div>
@@ -254,6 +284,82 @@ function renderEmails(emails, keyword = ""){
       </div>
     `
   }).join("")
+}
+
+function openEmail(index){
+  const mail = currentShownEmails[index]
+  const box = document.getElementById("mailContainer")
+
+  if(!mail){
+    return
+  }
+
+  const canReply = currentFolder !== "drafts"
+
+  box.innerHTML = `
+    <div class="mail-item" style="cursor:default">
+
+      <div class="detail-actions">
+        <button class="back-btn" onclick="renderEmails(currentEmails, document.getElementById('searchInput').value)">
+          ← Back
+        </button>
+
+        ${
+          canReply
+          ? `<button class="reply-btn" onclick="replyEmail('${escapeJs(mail.from)}','${escapeJs(mail.subject || "No Subject")}')">
+              ↩ Reply
+            </button>`
+          : `<button class="reply-btn" onclick="openDraft('${escapeJs(mail.to)}','${escapeJs(mail.subject || "")}','${escapeJs(mail.message || "")}')">
+              ✏️ Edit Draft
+            </button>`
+        }
+      </div>
+
+      <div class="mail-top">
+        <div class="mail-name">From: ${escapeHtml(mail.from)}</div>
+        <div class="mail-time">${formatTime(mail.createdAt)}</div>
+      </div>
+
+      <div style="font-size:13px;color:#6b7280;margin-top:8px;word-break:break-word">
+        To: ${escapeHtml(mail.to || "-")}
+      </div>
+
+      <div class="mail-subject" style="font-size:22px;margin-top:18px">
+        ${escapeHtml(mail.subject || "No Subject")}
+      </div>
+
+      <div class="mail-preview" style="margin-top:20px;font-size:15px;line-height:1.8;color:#374151;white-space:pre-wrap">
+        ${escapeHtml(mail.message || "(No message)")}
+      </div>
+
+    </div>
+  `
+}
+
+function replyEmail(to, subject){
+  openCompose()
+
+  document.getElementById("composeTitle").innerText = "Reply Message"
+  document.getElementById("to").value = to
+
+  if(String(subject).startsWith("Re:")){
+    document.getElementById("subject").value = subject
+  }else{
+    document.getElementById("subject").value = "Re: " + subject
+  }
+
+  document.getElementById("message").value = ""
+  document.getElementById("message").focus()
+}
+
+function openDraft(to, subject, message){
+  openCompose()
+
+  document.getElementById("composeTitle").innerText = "Edit Draft"
+  document.getElementById("to").value = to
+  document.getElementById("subject").value = subject
+  document.getElementById("message").value = message
+  document.getElementById("message").focus()
 }
 
 function formatTime(value){
@@ -270,7 +376,7 @@ function formatTime(value){
 }
 
 function escapeHtml(text){
-  return String(text).replace(/[&<>'"]/g, c => ({
+  return String(text || "").replace(/[&<>'"]/g, c => ({
     "&":"&amp;",
     "<":"&lt;",
     ">":"&gt;",
@@ -279,7 +385,17 @@ function escapeHtml(text){
   }[c]))
 }
 
+function escapeJs(text){
+  return String(text || "")
+    .replace(/\\/g,"\\\\")
+    .replace(/'/g,"\\'")
+    .replace(/"/g,'\\"')
+    .replace(/\n/g,"\\n")
+    .replace(/\r/g,"")
+}
+
 function openCompose(){
+  document.getElementById("composeTitle").innerText = "New Message"
   document.getElementById("composeModal").style.display = "flex"
 }
 
@@ -291,6 +407,7 @@ function clearCompose(){
   document.getElementById("to").value = ""
   document.getElementById("subject").value = ""
   document.getElementById("message").value = ""
+  document.getElementById("composeTitle").innerText = "New Message"
 }
 
 async function sendEmail(){
