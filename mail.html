@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>BinMail</title>
+
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <!-- FONT -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    body{
+      background:#f5f7fb;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+    }
+
+    .card{
+
+      width:100%;
+      max-width:420px;
+
+      background:white;
+
+      border-radius:24px;
+
+      padding:40px 34px;
+
+      box-shadow:
+      0 10px 40px rgba(0,0,0,0.08);
+
+    }
+
+    /* LOGO */
+
+    .logo{
+      font-size:46px;
+      font-weight:600;
+      letter-spacing:-3px;
+      text-align:center;
+      margin-bottom:12px;
+      user-select:none;
+    }
+
+    .g{ color:#4285F4; }
+    .o{ color:#EA4335; }
+    .b{ color:#34A853; }
+    .i{ color:#FBBC05; }
+    .n{ color:#7E57FF; }
+
+    /* TITLE */
+
+    .title{
+      text-align:center;
+      font-size:26px;
+      font-weight:600;
+      color:#202124;
+      margin-bottom:8px;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:#5f6368;
+      font-size:14px;
+      margin-bottom:34px;
+      line-height:1.5;
+    }
+
+    /* FORM */
+
+    .input-group{
+      margin-bottom:18px;
+    }
+
+    .input-group input{
+
+      width:100%;
+
+      padding:15px 16px;
+
+      border:1px solid #dadce0;
+
+      border-radius:12px;
+
+      font-size:15px;
+
+      outline:none;
+
+      transition:0.2s ease;
+
+    }
+
+    .input-group input:focus{
+
+      border-color:#4285F4;
+
+      box-shadow:
+      0 0 0 4px rgba(66,133,244,0.15);
+
+    }
+
+    /* BUTTON */
+
+    .btn{
+
+      width:100%;
+
+      border:none;
+
+      background:#4285F4;
+
+      color:white;
+
+      padding:15px;
+
+      border-radius:12px;
+
+      font-size:15px;
+
+      font-weight:500;
+
+      cursor:pointer;
+
+      transition:0.2s ease;
+
+    }
+
+    .btn:hover{
+      opacity:0.92;
+    }
+
+    /* REGISTER LINK */
+
+    .register-link{
+
+      margin-top:20px;
+
+      text-align:center;
+
+      font-size:14px;
+
+      color:#5f6368;
+
+    }
+
+    .register-link a{
+
+      color:#4285F4;
+
+      text-decoration:none;
+
+      font-weight:500;
+
+    }
+
+    /* FOOTER */
+
+    .footer{
+
+      margin-top:24px;
+
+      text-align:center;
+
+      font-size:13px;
+
+      color:#5f6368;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="card">
+
+    <!-- LOGO -->
+
+    <div class="logo">
+
+      <span class="g">b</span>
+      <span class="o">i</span>
+      <span class="b">n</span>
+      <span class="i">m</span>
+      <span class="n">ail</span>
+
+    </div>
+
+    <!-- TITLE -->
+
+    <div class="title">
+      Welcome to BinMail
+    </div>
+
+    <div class="subtitle">
+      Secure email powered by gobin
+    </div>
+
+    <!-- FORM -->
+
+    <form id="loginForm">
+
+      <div class="input-group">
+
+        <input
+          type="email"
+          id="email"
+          placeholder="Email address"
+          autocomplete="off"
+        >
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="password"
+          id="password"
+          placeholder="Password"
+        >
+
+      </div>
+
+      <button
+        type="submit"
+        class="btn"
+      >
+        Sign In
+      </button>
+
+    </form>
+
+    <!-- REGISTER -->
+
+    <div class="register-link">
+
+      Don't have account?
+      <a href="/register">
+        Create Account
+      </a>
+
+    </div>
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+      © 2026 BinMail
+    </div>
+
+  </div>
+
+  <!-- LOGIN SCRIPT -->
+
+  <script>
+
+    const form =
+    document.getElementById("loginForm")
+
+    form.addEventListener("submit", async(e)=>{
+
+      e.preventDefault()
+
+      const email =
+      document.getElementById("email").value
+
+      const password =
+      document.getElementById("password").value
+
+      try{
+
+        const res =
+        await fetch("http://localhost:5000/api/login",{
+
+          method:"POST",
+
+          headers:{
+            "Content-Type":"application/json"
+          },
+
+          body:JSON.stringify({
+            email,
+            password
+          })
+
+        })
+
+        const data =
+        await res.json()
+
+        alert(data.message)
+
+        if(data.success){
+
+          localStorage.setItem(
+            "binmailUser",
+            JSON.stringify(data.user)
+          )
+
+          window.location.href =
+          "/inbox"
+
+        }
+
+      }catch(err){
+
+        console.log(err)
+
+        alert("Server error")
+
+      }
+
+    })
+
+  </script>
+
+</body>
+</html>

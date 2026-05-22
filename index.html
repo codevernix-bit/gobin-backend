@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>GoBin</title>
+
+  <!-- ICON -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+
+  <!-- FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+ <link
+  href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+  />
+
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Outfit',sans-serif;
+    }
+
+    body{
+
+      min-height:100vh;
+
+      overflow:hidden;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      position:relative;
+
+      background:
+      radial-gradient(circle at top left,
+      rgba(70,140,255,0.14) 0%,
+      rgba(255,255,255,0) 32%),
+
+      radial-gradient(circle at top right,
+      rgba(70,140,255,0.12) 0%,
+      rgba(255,255,255,0) 28%),
+
+      radial-gradient(circle at bottom left,
+      rgba(70,140,255,0.10) 0%,
+      rgba(255,255,255,0) 24%),
+
+      radial-gradient(circle at bottom right,
+      rgba(70,140,255,0.10) 0%,
+      rgba(255,255,255,0) 26%),
+
+      #f9fbff;
+
+    }
+
+    /* BACKGROUND CIRCLES */
+
+    .circle{
+
+      position:absolute;
+
+      border:2px solid rgba(88,150,255,0.10);
+
+      border-radius:50%;
+
+      pointer-events:none;
+
+    }
+
+    .circle1{
+      width:540px;
+      height:540px;
+      top:-260px;
+      left:-260px;
+    }
+
+    .circle2{
+      width:340px;
+      height:340px;
+      top:-90px;
+      right:-90px;
+    }
+
+    .circle3{
+      width:360px;
+      height:360px;
+      bottom:-180px;
+      left:-180px;
+    }
+
+    .circle4{
+      width:420px;
+      height:420px;
+      bottom:-220px;
+      right:-220px;
+    }
+
+    .dot{
+      position:absolute;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:rgba(88,150,255,0.16);
+    }
+
+    .dot1{
+      top:70px;
+      right:250px;
+    }
+
+    .dot2{
+      left:52px;
+      top:460px;
+    }
+
+    .dot3{
+      right:260px;
+      bottom:90px;
+    }
+
+    .container{
+
+      width:100%;
+      max-width:1100px;
+
+      padding:20px;
+
+      text-align:center;
+
+      position:relative;
+      z-index:5;
+
+    }
+
+    /* LOGO */
+
+    .logo{
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+      gap:10px;
+
+      margin-bottom:52px;
+
+      user-select:none;
+
+    }
+
+    .logo-text{
+
+  font-size:118px;
+
+  font-weight:600;
+
+  letter-spacing:-7px;
+
+  line-height:1;
+
+  font-family:'Outfit',sans-serif;
+
+  background:linear-gradient(
+    180deg,
+    #5db8ff 0%,
+    #1574ff 100%
+  );
+
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+
+}
+
+    .globe{
+
+      width:120px;
+      height:120px;
+
+      border-radius:50%;
+
+      overflow:hidden;
+
+      box-shadow:
+      0 12px 35px rgba(0,90,255,0.25);
+
+      margin:0 4px;
+
+      background:#0b63ff;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+
+    }
+
+    .globe img{
+
+      width:100%;
+      height:100%;
+
+      object-fit:cover;
+
+    }
+
+    /* SEARCH */
+
+    .search-form{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+
+    .search-box{
+
+      width:100%;
+      max-width:980px;
+
+      background:white;
+
+      border:2px solid #b8d2ff;
+
+      border-radius:70px;
+
+      display:flex;
+      align-items:center;
+
+      padding:24px 34px;
+
+      transition:0.25s ease;
+
+      box-shadow:
+      0 8px 30px rgba(0,0,0,0.04);
+
+    }
+
+    .search-box:hover,
+    .search-box:focus-within{
+
+      border-color:#6ea9ff;
+
+      box-shadow:
+      0 16px 40px rgba(66,133,244,0.12);
+
+      transform:translateY(-2px);
+
+    }
+
+    .search-icon{
+
+      font-size:52px;
+
+      color:#4f9dff;
+
+      opacity:0.95;
+
+    }
+
+    .search-box input{
+
+      flex:1;
+
+      border:none;
+      outline:none;
+
+      background:transparent;
+
+      font-size:28px;
+      font-weight:500;
+
+      color:#5d6575;
+
+      padding-left:20px;
+
+    }
+
+    .search-box input::placeholder{
+      color:#7f8798;
+    }
+
+    /* QUICK LINKS */
+
+    .quick-links{
+
+      margin-top:54px;
+
+      display:flex;
+      justify-content:center;
+      gap:30px;
+
+      flex-wrap:wrap;
+
+    }
+
+    .quick-links a{
+
+      width:210px;
+
+      background:rgba(255,255,255,0.72);
+
+      backdrop-filter:blur(12px);
+
+      border:2px solid #e2ecff;
+
+      border-radius:28px;
+
+      padding:34px 24px;
+
+      text-decoration:none;
+
+      color:#364152;
+
+      transition:0.25s ease;
+
+      box-shadow:
+      0 6px 18px rgba(0,0,0,0.03);
+
+    }
+
+    .quick-links a:hover{
+
+      transform:translateY(-4px);
+
+      background:white;
+
+      box-shadow:
+      0 16px 34px rgba(0,0,0,0.08);
+
+    }
+
+    .quick-links .icon{
+
+      display:block;
+
+      font-size:64px;
+
+      margin-bottom:16px;
+
+    }
+
+    .quick-links span{
+
+      font-size:22px;
+      font-weight:500;
+
+    }
+
+    /* FOOTER */
+
+    .footer{
+
+      position:absolute;
+
+      bottom:36px;
+
+      width:100%;
+
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:24px;
+
+      color:#4285ff;
+
+      font-size:20px;
+      font-weight:500;
+
+      z-index:5;
+
+    }
+
+    .footer-line{
+
+      width:140px;
+      height:2px;
+
+      background:#d7e5ff;
+
+      border-radius:20px;
+
+    }
+
+    /* MOBILE */
+
+    @media(max-width:900px){
+
+      .logo-text{
+        font-size:72px;
+      }
+
+      .globe{
+        width:74px;
+        height:74px;
+      }
+
+      .search-box{
+        padding:18px 20px;
+      }
+
+      .search-box input{
+        font-size:18px;
+      }
+
+      .search-icon{
+        font-size:34px;
+      }
+
+      .quick-links{
+        gap:14px;
+      }
+
+      .quick-links a{
+        width:150px;
+        padding:24px 14px;
+      }
+
+      .quick-links .icon{
+        font-size:42px;
+      }
+
+      .quick-links span{
+        font-size:18px;
+      }
+
+      .footer{
+        font-size:15px;
+      }
+
+      .footer-line{
+        width:60px;
+      }
+
+    }
+
+    /* PERFECT MOBILE FIX */
+
+@media(max-width:700px){
+
+  html,
+  body{
+    overflow-x:hidden;
+  }
+
+  body{
+    padding:20px 0;
+  }
+
+  .container{
+
+    width:100%;
+
+    max-width:100%;
+
+    padding:16px;
+
+  }
+
+  .logo{
+
+    gap:4px;
+
+    margin-bottom:34px;
+
+  }
+
+  .logo-text{
+
+    font-size:64px;
+
+    letter-spacing:-4px;
+
+  }
+
+  .globe{
+
+    width:62px;
+    height:62px;
+
+    margin:0;
+
+  }
+
+  .search-box{
+
+    padding:16px 18px;
+
+    border-radius:40px;
+
+  }
+
+  .search-icon{
+    font-size:28px;
+  }
+
+  .search-box input{
+
+    font-size:17px;
+
+    padding-left:12px;
+
+  }
+
+  .quick-links{
+
+    gap:12px;
+
+    margin-top:30px;
+
+  }
+
+  .quick-links a{
+
+    width:140px;
+
+    padding:20px 12px;
+
+    border-radius:22px;
+
+  }
+
+  .quick-links .icon{
+
+    font-size:38px;
+
+    margin-bottom:10px;
+
+  }
+
+  .quick-links span{
+
+    font-size:16px;
+
+  }
+
+  .footer{
+
+    bottom:16px;
+
+    font-size:14px;
+
+    gap:10px;
+
+  }
+
+  .footer-line{
+    width:45px;
+  }
+
+}
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- BACKGROUND -->
+
+  <div class="circle circle1"></div>
+  <div class="circle circle2"></div>
+  <div class="circle circle3"></div>
+  <div class="circle circle4"></div>
+
+  <div class="dot dot1"></div>
+  <div class="dot dot2"></div>
+  <div class="dot dot3"></div>
+
+  <!-- CONTENT -->
+
+  <div class="container">
+
+    <!-- LOGO -->
+
+    <div class="logo">
+
+      <div class="logo-text">
+        Go
+      </div>
+
+      <div class="globe">
+
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg">
+
+      </div>
+
+      <div class="logo-text">
+        Bin
+      </div>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <form
+      class="search-form"
+      id="searchForm"
+    >
+
+      <div class="search-box">
+
+        <div class="search-icon">
+          🔎
+        </div>
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search the web with GoBin..."
+          autocomplete="off"
+        />
+
+      </div>
+
+    </form>
+
+    <!-- QUICK LINKS -->
+
+    <div class="quick-links">
+    <a href="https://binpay.asia/">
+    <span class="icon">
+      💳
+    </span>
+
+    <span>
+      BinPay
+    </span>
+    </a>
+    </a>
+
+      <a href="https://gobin.id/mail">
+
+        <span class="icon">
+          ✉️
+        </span>
+
+        <span>
+          BinMail
+        </span>
+
+      </a>
+
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+
+  <div class="footer">
+
+    <div class="footer-line"></div>
+
+    <div>
+      © 2026 GoBin
+    </div>
+
+    <div class="footer-line"></div>
+
+  </div>
+
+  <!-- SCRIPT -->
+
+  <script>
+
+    const form =
+    document.getElementById('searchForm');
+
+    const input =
+    document.getElementById('searchInput');
+
+    form.addEventListener('submit', function(e){
+
+      e.preventDefault();
+
+      const query =
+      input.value.trim();
+
+      if(query !== ''){
+
+        window.location.href =
+        `/search?q=${encodeURIComponent(query)}`;
+
+      }
+
+    });
+
+  </script>
+
+</body>
+</html>

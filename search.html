@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>GoBin Search</title>
+
+  <link rel="icon" href="assets/logo.png">
+
+  <!-- Google Search Engine -->
+  <script>
+window.__gcse = {
+  parsetags: 'explicit'
+};
+</script>
+
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Poppins',sans-serif;
+    }
+
+    body{
+  background:#f8f9fb;
+  min-height:100vh;
+  color:#202124;
+  overflow-x:hidden;
+
+    }
+
+    /* TOP NAVBAR */
+
+    .navbar{
+  width:100%;
+  padding:18px 40px;
+  display:flex;
+  align-items:center;
+  gap:25px;
+  background:white;
+  border-bottom:1px solid #ececec;
+}
+    .logo{
+      height:42px;
+    }
+
+    .search-wrapper{
+      flex:1;
+      max-width:800px;
+      position:relative;
+    }
+
+    .search-wrapper input{
+      width:100%;
+      height:58px;
+      border:none;
+      outline:none;
+      border-radius:50px;
+      padding:0 65px 0 28px;
+      font-size:17px;
+      background:#f1f3f4;
+      transition:0.3s ease;
+    }
+
+    .search-wrapper input:focus{
+      background:white;
+      box-shadow:0 3px 14px rgba(0,0,0,0.12);
+    }
+
+    .search-icon{
+      position:absolute;
+      right:24px;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:20px;
+      color:#5f6368;
+    }
+
+    /* SEARCH RESULT AREA */
+
+    .container{
+      width:100%;
+      max-width:1000px;
+      margin:auto;
+      padding:35px 30px 80px;
+    }
+
+    .gcse-searchresults-only{
+      width:100%;
+    }
+
+    /* REMOVE DEFAULT GOOGLE BOX */
+
+    .gsc-control-cse{
+      background:transparent !important;
+      border:none !important;
+      padding:0 !important;
+    }
+
+    .gsc-control-wrapper-cse{
+      background:transparent !important;
+    }
+
+    .gsc-results-wrapper-overlay{
+      position:relative !important;
+      inset:auto !important;
+      width:100% !important;
+      max-width:100% !important;
+      height:auto !important;
+      background:transparent !important;
+      box-shadow:none !important;
+    }
+
+    .gsc-modal-background-image{
+      display:none !important;
+    }
+
+    .gsc-above-wrapper-area{
+      border-bottom:none !important;
+    }
+
+    .gsc-result{
+      background:white !important;
+      border:none !important;
+      border-radius:22px !important;
+      padding:22px !important;
+      margin-bottom:18px !important;
+      box-shadow:0 2px 10px rgba(0,0,0,0.06);
+      transition:0.25s ease;
+    }
+
+    .gsc-result:hover{
+      transform:translateY(-2px);
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
+
+    .gs-title{
+      font-size:22px !important;
+      line-height:1.4 !important;
+    }
+
+    .gs-title a{
+      color:#1a0dab !important;
+      text-decoration:none !important;
+    }
+
+    .gs-title a:hover{
+      text-decoration:underline !important;
+    }
+
+    .gs-visibleUrl{
+      color:#188038 !important;
+      font-size:14px !important;
+    }
+
+    .gs-snippet{
+      color:#4d5156 !important;
+      font-size:15px !important;
+      line-height:1.7 !important;
+      margin-top:10px !important;
+    }
+
+    .gsc-cursor-box{
+      margin-top:35px !important;
+      text-align:center;
+    }
+
+    .gsc-cursor-page{
+      border:none !important;
+      background:white !important;
+      border-radius:12px !important;
+      padding:10px 16px !important;
+      margin:0 5px !important;
+      box-shadow:0 1px 5px rgba(0,0,0,0.08);
+    }
+
+    .gsc-cursor-current-page{
+      background:#4285f4 !important;
+      color:white !important;
+    }
+
+    /* REMOVE BRANDING */
+
+    .gcsc-branding{
+      display:none !important;
+    }
+
+    .gsc-adBlock{
+      display:none !important;
+    }
+
+    .gsc-resultsbox-visible{
+      overflow:visible !important;
+    }
+
+    .gsc-results-wrapper-visible{
+      overflow:visible !important;
+    }
+
+    /* MOBILE */
+
+    @media(max-width:768px){
+
+      .navbar{
+        padding:16px;
+        gap:14px;
+      }
+
+      .logo{
+        height:34px;
+      }
+
+      .search-wrapper input{
+        height:52px;
+        font-size:15px;
+      }
+
+      .container{
+        padding:20px 14px 60px;
+      }
+
+      .gs-title{
+        font-size:18px !important;
+      }
+
+    }
+
+
+    /* HILANGKAN POPUP OVERLAY */
+
+.gsc-results-wrapper-overlay{
+  position: static !important;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  inset: unset !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.gsc-overlay{
+  display:none !important;
+}
+
+.gsc-modal-background-image{
+  display:none !important;
+}
+
+.gsc-results-close-btn{
+  display:none !important;
+}
+
+
+/* FIX MOBILE & SCROLL */
+
+html,
+body{
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  height:auto !important;
+}
+
+.gsc-results-wrapper-overlay,
+.gsc-results-wrapper-visible,
+.gsc-control-wrapper-cse,
+.gsc-resultsbox-visible{
+  overflow:visible !important;
+  height:auto !important;
+  max-height:none !important;
+}
+
+.gsc-webResult{
+  overflow:visible !important;
+}
+
+.gsc-results{
+  overflow:visible !important;
+}
+
+.gsc-expansionArea{
+  overflow:visible !important;
+}
+
+/* REAL MOBILE SCROLL FIX */
+
+
+.gsc-results-wrapper-visible{
+  height:auto !important;
+  overflow:visible !important;
+}
+
+.gsc-resultsbox-visible{
+  height:auto !important;
+  overflow:visible !important;
+}
+
+body{
+  overscroll-behavior:auto !important;
+  touch-action:pan-y !important;
+}
+
+.gsc-results-wrapper-visible {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  max-height: 80vh !important;
+}
+
+.gsc-resultsbox-visible {
+  overflow: visible !important;
+}
+
+html, body {
+  height: 100%;
+  overflow: auto !important;
+}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+
+  <div class="navbar">
+
+    <a href="/">
+      <img src="assets/logo.png" class="logo">
+    </a>
+
+    <div class="search-wrapper">
+
+      <form id="searchForm">
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Cari di GoBin..."
+        >
+
+        <div class="search-icon">🔍</div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <!-- SEARCH RESULT -->
+
+  <div class="container">
+
+  <div
+    id="results"
+    style="
+      min-height:100vh;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+    "
+  ></div>
+
+</div>
+
+  <script>
+
+    const params = new URLSearchParams(window.location.search);
+
+    const q = params.get("q");
+
+    const input = document.getElementById("searchInput");
+
+    if(q){
+      input.value = q;
+    }
+
+    document.getElementById("searchForm").addEventListener("submit", function(e){
+
+      e.preventDefault();
+
+      const value = input.value.trim();
+
+      if(value !== ""){
+        window.location.href = `/search?q=${encodeURIComponent(value)}`;
+      }
+
+    });
+
+  </script>
+
+<script>
+
+window.__gcse = {
+  parsetags: 'explicit',
+  callback: function() {
+
+    const params = new URLSearchParams(window.location.search);
+
+    const q = params.get("q");
+
+    if(q){
+
+      google.search.cse.element.render({
+        div: "results",
+        tag: 'searchresults-only'
+      });
+
+      google.search.cse.element.getElement('results').execute(q);
+
+    }
+
+  }
+};
+
+</script>
+<script async
+src="https://cse.google.com/cse.js?cx=e30dced6073ce4c8a">
+</script>
+
+</body>
+</html>
