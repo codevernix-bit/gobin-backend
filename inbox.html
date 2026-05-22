@@ -309,23 +309,125 @@
 
     }
 
-    /* MOBILE */
+    /* =========================
+   MOBILE RESPONSIVE
+========================= */
 
-    @media(max-width:900px){
+@media(max-width:768px){
 
-      .sidebar{
-        display:none;
-      }
+  body{
 
-      .topbar{
-        padding:0 16px;
-      }
+    flex-direction:column;
+    height:auto;
+    overflow:auto;
 
-      .mail-container{
-        padding:14px;
-      }
+  }
 
-    }
+  .sidebar{
+
+    width:100%;
+    height:auto;
+
+    padding:16px;
+
+    border-right:none;
+    border-bottom:1px solid #eee;
+
+    display:flex;
+
+  }
+
+  .logo{
+
+    font-size:42px;
+    margin-bottom:18px;
+
+  }
+
+  .compose-btn{
+
+    width:100%;
+    margin-bottom:18px;
+
+  }
+
+  .menu{
+
+    display:flex;
+    flex-direction:row;
+
+    gap:10px;
+
+    overflow-x:auto;
+
+    padding-bottom:10px;
+
+  }
+
+  .menu a{
+
+    min-width:120px;
+    text-align:center;
+    flex:none;
+
+  }
+
+  .profile{
+
+    margin-top:20px;
+  }
+
+  .main{
+
+    width:100%;
+  }
+
+  .topbar{
+
+    padding:14px;
+    height:auto;
+
+  }
+
+  .search-box{
+
+    width:100%;
+  }
+
+  .mail-container{
+
+    padding:14px;
+  }
+
+  .mail-item{
+
+    padding:16px;
+  }
+
+  .mail-subject{
+
+    font-size:16px;
+  }
+
+  .mail-preview{
+
+    font-size:14px;
+  }
+
+  .compose-box{
+
+    width:92%;
+    padding:18px;
+
+  }
+
+  .compose-box textarea{
+
+    height:140px;
+
+  }
+
+}
 
   </style>
 
@@ -351,7 +453,7 @@
 
     <!-- COMPOSE -->
 
-    <button class="compose-btn">
+    <button class="compose-btn" onclick="openCompose()">
       ✉️ Compose
     </button>
 
@@ -573,6 +675,243 @@
   document.querySelector(
     ".profile"
   ).appendChild(logoutBtn)
+
+</script>
+
+<!-- COMPOSE MODAL -->
+
+<div class="compose-modal" id="composeModal">
+
+  <div class="compose-box">
+
+    <div class="compose-title">
+      New Message
+    </div>
+
+    <input
+      type="email"
+      id="to"
+      placeholder="To"
+    >
+
+    <input
+      type="text"
+      id="subject"
+      placeholder="Subject"
+    >
+
+    <textarea
+      id="message"
+      placeholder="Write message..."
+    ></textarea>
+
+    <div class="compose-actions">
+
+      <button
+        class="close-btn"
+        onclick="closeCompose()"
+      >
+        Cancel
+      </button>
+
+      <button
+        class="send-btn"
+        onclick="sendEmail()"
+      >
+        Send
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+
+.compose-modal{
+
+  position:fixed;
+  inset:0;
+
+  background:rgba(0,0,0,0.4);
+
+  display:none;
+
+  justify-content:center;
+  align-items:center;
+
+  z-index:9999;
+
+}
+
+.compose-box{
+
+  width:100%;
+  max-width:520px;
+
+  background:white;
+
+  border-radius:20px;
+
+  padding:24px;
+
+}
+
+.compose-title{
+
+  font-size:22px;
+  font-weight:600;
+
+  margin-bottom:20px;
+
+}
+
+.compose-box input,
+.compose-box textarea{
+
+  width:100%;
+
+  border:1px solid #ddd;
+
+  border-radius:12px;
+
+  padding:14px;
+
+  margin-bottom:14px;
+
+  font-size:14px;
+
+  outline:none;
+
+}
+
+.compose-box textarea{
+
+  height:180px;
+  resize:none;
+
+}
+
+.compose-actions{
+
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+
+}
+
+.close-btn,
+.send-btn{
+
+  border:none;
+
+  padding:12px 20px;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  font-weight:600;
+
+}
+
+.close-btn{
+
+  background:#e5e7eb;
+
+}
+
+.send-btn{
+
+  background:#4285F4;
+  color:white;
+
+}
+
+</style>
+
+<script>
+
+const API =
+"https://gobin-backend-production.up.railway.app"
+
+function openCompose(){
+
+  document.getElementById(
+    "composeModal"
+  ).style.display = "flex"
+
+}
+
+function closeCompose(){
+
+  document.getElementById(
+    "composeModal"
+  ).style.display = "none"
+
+}
+
+async function sendEmail(){
+
+  const user =
+  JSON.parse(
+    localStorage.getItem(
+      "binmailUser"
+    )
+  )
+
+  const to =
+  document.getElementById("to").value
+
+  const subject =
+  document.getElementById("subject").value
+
+  const message =
+  document.getElementById("message").value
+
+  try{
+
+    const res =
+    await fetch(`${API}/api/send`,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+
+        from:user.email,
+        to,
+        subject,
+        message
+
+      })
+
+    })
+
+    const data =
+    await res.json()
+
+    alert(data.message)
+
+    if(data.success){
+
+      closeCompose()
+
+    }
+
+  }catch(err){
+
+    console.log(err)
+
+    alert("Server error")
+
+  }
+
+}
 
 </script>
 
