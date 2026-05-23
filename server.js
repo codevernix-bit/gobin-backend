@@ -211,58 +211,49 @@ app.post("/api/send", async(req,res)=>{
     }
 
     if(external){
-      if(!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS){
-        return res.status(500).json({
-          success:false,
-          message:"SMTP belum dikonfigurasi di server"
-        })
-      }
 
       await axios.post(
-  "https://api.brevo.com/v3/smtp/email",
-  {
-    sender: {
-  name: "GoBin",
-  email: "codevernix@gmail.com"
-},
-    
+        "https://api.brevo.com/v3/smtp/email",
+        {
+          sender:{
+            name:"GoBin",
+            email:"codevernix@gmail.com"
+          },
 
-    to: [
-      {
-        email: cleanTo
-      }
-    ],
-    
+          to:[
+            {
+              email:cleanTo
+            }
+          ],
 
-    subject: cleanSubject,
+          subject:cleanSubject,
 
-    htmlContent: `
-      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
-        <p style="font-size:13px;color:#6b7280">
-          From: <b>${cleanFrom}</b>
-        </p>
+          htmlContent:`
+            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+              <p style="font-size:13px;color:#6b7280">
+                From: <b>${cleanFrom}</b>
+              </p>
 
-        <div style="white-space:pre-wrap">
-          ${escapeHtmlServer(cleanMessage)}
-        </div>
+              <div style="white-space:pre-wrap">
+                ${escapeHtmlServer(cleanMessage)}
+              </div>
 
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
 
-        <p style="font-size:12px;color:#6b7280">
-          Sent via BinMail / GoBin
-        </p>
-      </div>
-    `
-  },
-  
-
-  {
-    headers: {
-      "api-key": process.env.BREVO_API_KEY,
-      "Content-Type": "application/json"
+              <p style="font-size:12px;color:#6b7280">
+                Sent via BinMail / GoBin
+              </p>
+            </div>
+          `
+        },
+        {
+          headers:{
+            "api-key":process.env.BREVO_API_KEY,
+            "Content-Type":"application/json"
+          }
+        }
+      )
     }
-  }
-)
 
     const newEmail = new Email({
       from:cleanFrom,
@@ -281,7 +272,7 @@ app.post("/api/send", async(req,res)=>{
       message: external
         ? "Email berhasil dikirim ke email luar"
         : "Email berhasil dikirim"
-    }) }
+    })
 
   }catch(err){
     console.log("SEND ERROR:", err)
