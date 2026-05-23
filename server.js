@@ -220,6 +220,11 @@ app.post("/api/send", async(req,res)=>{
             email:"codevernix@gmail.com"
           },
 
+          replyTo:{
+          email:cleanFrom,
+          name:"BinMail User"
+         },
+
           to:[
             {
               email:cleanTo
