@@ -4,6 +4,7 @@ const express = require("express")
 const mongoose = require("mongoose")
 const bcrypt = require("bcryptjs")
 const cors = require("cors")
+const nodemailer = require("nodemailer")
 
 const app = express()
 
@@ -16,6 +17,28 @@ app.get("/", (req, res) => {
     message: "BinMail API Running"
   })
 })
+
+/* =========================
+   SMTP CONFIG
+========================= */
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 465),
+  secure: Number(process.env.SMTP_PORT || 465) === 465,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+})
+
+function isExternalEmail(email){
+  return !String(email || "").toLowerCase().endsWith("@gobin.id")
+}
+
+/* =========================
+   SCHEMAS
+========================= */
 
 const userSchema = new mongoose.Schema({
   username:{ type:String, required:true, unique:true },
@@ -35,10 +58,15 @@ const emailSchema = new mongoose.Schema({
   read:{ type:Boolean, default:false },
   starred:{ type:Boolean, default:false },
   trash:{ type:Boolean, default:false },
+  external:{ type:Boolean, default:false },
   createdAt:{ type:Date, default:Date.now }
 })
 
 const Email = mongoose.model("Email", emailSchema)
+
+/* =========================
+   AUTH
+========================= */
 
 app.post("/api/register", async(req,res)=>{
   try{
@@ -136,6 +164,10 @@ app.post("/api/login", async(req,res)=>{
   }
 })
 
+/* =========================
+   SEND EMAIL
+========================= */
+
 app.post("/api/send", async(req,res)=>{
   try{
     const { from, to, subject, message } = req.body
@@ -147,39 +179,105 @@ app.post("/api/send", async(req,res)=>{
       })
     }
 
-    const receiver = await User.findOne({ email:to })
+    const cleanFrom = String(from).trim().toLowerCase()
+    const cleanTo = String(to).trim().toLowerCase()
+    const cleanSubject = subject || "No Subject"
+    const cleanMessage = message || ""
 
-    if(!receiver){
+    const sender = await User.findOne({ email:cleanFrom })
+
+    if(!sender){
       return res.status(400).json({
         success:false,
-        message:"Email tujuan tidak ditemukan"
+        message:"Pengirim tidak valid"
+      })
+    }
+
+    const external = isExternalEmail(cleanTo)
+
+    if(!external){
+      const receiver = await User.findOne({ email:cleanTo })
+
+      if(!receiver){
+        return res.status(400).json({
+          success:false,
+          message:"Email tujuan Gobin tidak ditemukan"
+        })
+      }
+    }
+
+    if(external){
+      if(!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS){
+        return res.status(500).json({
+          success:false,
+          message:"SMTP belum dikonfigurasi di server"
+        })
+      }
+
+      await transporter.sendMail({
+        from: `"${process.env.SMTP_FROM_NAME || "BinMail"}" <${process.env.SMTP_USER}>`,
+        replyTo: cleanFrom,
+        to: cleanTo,
+        subject: cleanSubject,
+        text:
+`From: ${cleanFrom}
+
+${cleanMessage}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+            <p style="font-size:13px;color:#6b7280">From: <b>${cleanFrom}</b></p>
+            <div style="white-space:pre-wrap">${escapeHtmlServer(cleanMessage)}</div>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
+            <p style="font-size:12px;color:#6b7280">
+              Sent via BinMail / GoBin
+            </p>
+          </div>
+        `
       })
     }
 
     const newEmail = new Email({
-      from,
-      to,
-      subject,
-      message,
+      from:cleanFrom,
+      to:cleanTo,
+      subject:cleanSubject,
+      message:cleanMessage,
       folder:"inbox",
-      read:false
+      read:external ? true : false,
+      external
     })
 
     await newEmail.save()
 
     res.json({
       success:true,
-      message:"Email berhasil dikirim"
+      message: external
+        ? "Email berhasil dikirim ke email luar"
+        : "Email berhasil dikirim"
     })
 
   }catch(err){
-    console.log(err)
+    console.log("SEND ERROR:", err)
+
     res.status(500).json({
       success:false,
-      message:"Server error"
+      message:"Gagal kirim email. Cek SMTP / App Password."
     })
   }
 })
+
+function escapeHtmlServer(text){
+  return String(text || "").replace(/[&<>'"]/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "'":"&#39;",
+    '"':"&quot;"
+  }[c]))
+}
+
+/* =========================
+   DRAFTS
+========================= */
 
 app.post("/api/drafts", async(req,res)=>{
   try{
@@ -210,24 +308,23 @@ app.post("/api/drafts", async(req,res)=>{
   }
 })
 
+/* =========================
+   FOLDERS
+========================= */
+
 app.get("/api/inbox/:email", async(req,res)=>{
   try{
     const emails = await Email.find({
       to:req.params.email,
-      folder:"inbox"
+      folder:"inbox",
+      trash:false
     }).sort({ createdAt:-1 })
 
-    res.json({
-      success:true,
-      emails
-    })
+    res.json({ success:true, emails })
 
   }catch(err){
     console.log(err)
-    res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
+    res.status(500).json({ success:false, message:"Server error" })
   }
 })
 
@@ -235,20 +332,15 @@ app.get("/api/sent/:email", async(req,res)=>{
   try{
     const emails = await Email.find({
       from:req.params.email,
-      folder:"inbox"
+      folder:"inbox",
+      trash:false
     }).sort({ createdAt:-1 })
 
-    res.json({
-      success:true,
-      emails
-    })
+    res.json({ success:true, emails })
 
   }catch(err){
     console.log(err)
-    res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
+    res.status(500).json({ success:false, message:"Server error" })
   }
 })
 
@@ -256,20 +348,15 @@ app.get("/api/drafts/:email", async(req,res)=>{
   try{
     const emails = await Email.find({
       from:req.params.email,
-      folder:"drafts"
+      folder:"drafts",
+      trash:false
     }).sort({ createdAt:-1 })
 
-    res.json({
-      success:true,
-      emails
-    })
+    res.json({ success:true, emails })
 
   }catch(err){
     console.log(err)
-    res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
+    res.status(500).json({ success:false, message:"Server error" })
   }
 })
 
@@ -283,17 +370,11 @@ app.get("/api/starred/:email", async(req,res)=>{
       starred:true
     }).sort({ createdAt:-1 })
 
-    res.json({
-      success:true,
-      emails
-    })
+    res.json({ success:true, emails })
 
   }catch(err){
     console.log(err)
-    res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
+    res.status(500).json({ success:false, message:"Server error" })
   }
 })
 
@@ -307,22 +388,16 @@ app.get("/api/trash/:email", async(req,res)=>{
       trash:true
     }).sort({ createdAt:-1 })
 
-    res.json({
-      success:true,
-      emails
-    })
+    res.json({ success:true, emails })
 
   }catch(err){
     console.log(err)
-    res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
+    res.status(500).json({ success:false, message:"Server error" })
   }
 })
 
 /* =========================
-   UNREAD COUNT
+   UNREAD
 ========================= */
 
 app.get("/api/unread/:email", async(req,res)=>{
@@ -330,7 +405,8 @@ app.get("/api/unread/:email", async(req,res)=>{
     const count = await Email.countDocuments({
       to:req.params.email,
       folder:"inbox",
-      read:false
+      read:false,
+      trash:false
     })
 
     res.json({
@@ -346,10 +422,6 @@ app.get("/api/unread/:email", async(req,res)=>{
     })
   }
 })
-
-/* =========================
-   MARK EMAIL AS READ
-========================= */
 
 app.patch("/api/read/:id", async(req,res)=>{
   try{
@@ -380,6 +452,10 @@ app.patch("/api/read/:id", async(req,res)=>{
     })
   }
 })
+
+/* =========================
+   USER
+========================= */
 
 app.get("/api/user/:email", async(req,res)=>{
   try{
@@ -412,11 +488,26 @@ app.get("/api/user/:email", async(req,res)=>{
   }
 })
 
+/* =========================
+   SERVER
+========================= */
+
 async function startServer(){
   try{
     await mongoose.connect(process.env.MONGO_URI)
 
     console.log("MongoDB Connected")
+
+    if(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS){
+      try{
+        await transporter.verify()
+        console.log("SMTP Ready")
+      }catch(err){
+        console.log("SMTP Verify Error:", err.message)
+      }
+    }else{
+      console.log("SMTP not configured")
+    }
 
     const PORT = process.env.PORT || 8080
 

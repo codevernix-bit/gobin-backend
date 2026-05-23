@@ -1,698 +1,1923 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>GoBin</title>
 
-  <!-- ICON -->
   <link rel="icon" type="image/png" href="assets/logo.png">
-
-  <!-- FONT -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
- <link
-  href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-  rel="stylesheet"
-  />
-
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:'Outfit',sans-serif;
+    :root{
+      --blue:#2563eb;
+      --cyan:#06b6d4;
+      --sky:#38bdf8;
+      --purple:#7c3aed;
+      --green:#10b981;
+      --dark:#0f172a;
+      --muted:#64748b;
+      --glass:rgba(255,255,255,.44);
+      --border:rgba(255,255,255,.54);
     }
+
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif}
+    html{scroll-behavior:smooth}
 
     body{
-
       min-height:100vh;
-
-      overflow:hidden;
-
-      display:flex;
-      justify-content:center;
-      align-items:center;
-
-      position:relative;
-
+      overflow-x:hidden;
+      color:#102033;
       background:
-      radial-gradient(circle at top left,
-      rgba(70,140,255,0.14) 0%,
-      rgba(255,255,255,0) 32%),
-
-      radial-gradient(circle at top right,
-      rgba(70,140,255,0.12) 0%,
-      rgba(255,255,255,0) 28%),
-
-      radial-gradient(circle at bottom left,
-      rgba(70,140,255,0.10) 0%,
-      rgba(255,255,255,0) 24%),
-
-      radial-gradient(circle at bottom right,
-      rgba(70,140,255,0.10) 0%,
-      rgba(255,255,255,0) 26%),
-
-      #f9fbff;
-
+        radial-gradient(circle at 10% 8%, rgba(6,182,212,.30), transparent 31%),
+        radial-gradient(circle at 88% 8%, rgba(124,58,237,.25), transparent 30%),
+        radial-gradient(circle at 55% 46%, rgba(37,99,235,.18), transparent 38%),
+        radial-gradient(circle at 80% 90%, rgba(16,185,129,.16), transparent 28%),
+        linear-gradient(135deg,#eaf8ff 0%,#f8fbff 42%,#eef2ff 100%);
     }
 
-    /* BACKGROUND CIRCLES */
-
-    .circle{
-
-      position:absolute;
-
-      border:2px solid rgba(88,150,255,0.10);
-
-      border-radius:50%;
-
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image:
+        linear-gradient(rgba(37,99,235,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,99,235,.04) 1px, transparent 1px);
+      background-size:42px 42px;
+      mask-image:linear-gradient(to bottom,black,transparent 82%);
       pointer-events:none;
-
+      z-index:0;
     }
 
-    .circle1{
-      width:540px;
-      height:540px;
-      top:-260px;
-      left:-260px;
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        linear-gradient(120deg, transparent, rgba(255,255,255,.38), transparent);
+      opacity:.45;
+      pointer-events:none;
+      z-index:0;
     }
 
-    .circle2{
-      width:340px;
-      height:340px;
-      top:-90px;
-      right:-90px;
+    .blob{
+      position:fixed;
+      border-radius:999px;
+      filter:blur(16px);
+      opacity:.75;
+      pointer-events:none;
+      z-index:0;
     }
 
-    .circle3{
+    .blob.one{width:300px;height:300px;top:70px;left:-100px;background:rgba(6,182,212,.18)}
+    .blob.two{width:380px;height:380px;right:-140px;top:150px;background:rgba(124,58,237,.16)}
+    .blob.three{width:330px;height:330px;left:34%;bottom:-180px;background:rgba(37,99,235,.15)}
+
+    .page{position:relative;z-index:2;width:100%;min-height:100vh;padding:22px}
+    .shell{max-width:1240px;margin:0 auto}
+
+    .nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      margin-bottom:26px;
+    }
+
+    .brand-mini{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#1d4ed8;
+      font-weight:800;
+      letter-spacing:-.4px;
+    }
+
+    .brand-dot{
+      width:34px;
+      height:34px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--cyan),var(--blue),var(--purple));
+      box-shadow:0 14px 30px rgba(37,99,235,.24);
+      display:grid;
+      place-items:center;
+      color:white;
+    }
+
+    .nav-links{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+    .nav-links a{
+      text-decoration:none;
+      color:#1e40af;
+      font-size:14px;
+      font-weight:700;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(191,219,254,.82);
+      backdrop-filter:blur(18px);
+      box-shadow:0 8px 24px rgba(37,99,235,.06);
+      transition:.25s ease;
+    }
+
+    .nav-links a:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.74);
+      color:#0f172a;
+      box-shadow:0 14px 34px rgba(37,99,235,.12);
+    }
+
+
+/* =========================
+   STICKY HEADER PREMIUM
+========================= */
+
+.sticky-header{
+  position:sticky;
+  top:8px;
+  z-index:999;
+  margin-bottom:16px;
+}
+
+.sticky-header .hero{
+  padding:12px 16px 10px;
+  border-radius:24px;
+}
+
+.sticky-header .hero-inner{
+  display:grid;
+  grid-template-columns:1.4fr auto 420px;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+}
+
+.sticky-header .greeting{
+  display:flex;
+  margin:0;
+  justify-self:start;
+  padding:8px 12px;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+.sticky-header .logo{
+  margin:0 auto;
+  justify-content:center;
+  transform:translateX(-40px);
+}
+
+.sticky-header .logo-text{
+  font-size:30px;
+  letter-spacing:-3px;
+}
+
+.sticky-header .globe{
+  width:34px;
+  height:34px;
+  border-width:2px;
+}
+
+.sticky-header .search-form{
+  width:100%;
+}
+
+.sticky-header .search-box{
+  max-width:520px;
+  margin-left:auto;
+  padding:8px 10px 8px 12px;
+  border-radius:20px;
+}
+
+.sticky-header .search-icon{
+  width:34px;
+  height:34px;
+  font-size:17px;
+  border-radius:13px;
+}
+
+.sticky-header .search-box input{
+  font-size:15px;
+}
+
+.sticky-header .search-btn{
+  padding:10px 14px;
+  border-radius:15px;
+}
+
+.sticky-header .search-chips{
+  grid-column:1 / -1;
+  margin-top:8px;
+  justify-content:center;
+  gap:8px;
+}
+
+.sticky-header .search-chips button{
+  padding:7px 12px;
+  font-size:13px;
+}
+
+@media(max-width:760px){
+  .sticky-header .hero-inner{
+    grid-template-columns:1fr;
+    gap:9px;
+    text-align:center;
+  }
+
+  .sticky-header .greeting{
+    justify-self:center;
+    font-size:12px;
+    padding:7px 11px;
+  }
+
+  .sticky-header .logo{
+    justify-content:center;
+  }
+
+  .sticky-header .logo-text{
+    font-size:30px;
+  }
+
+  .sticky-header .globe{
+  width:30px;
+  height:30px;
+  }
+
+  .sticky-header .search-box{
+    padding:7px 9px;
+  }
+
+  .sticky-header .search-chips{
+    margin-top:6px;
+  }
+}
+
+
+.left-tools{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.top-mini-link{
+  box-shadow:0 8px 18px rgba(6,182,212,.10);
+  text-decoration:none;
+  color:white;
+  font-size:13px;
+  font-weight:800;
+  padding:8px 11px;
+  border-radius:999px;
+  background:rgba(15,23,42,.45);
+  border:1px solid rgba(255,255,255,.10);
+  backdrop-filter:blur(14px);
+  transition:.25s ease;
+  white-space:nowrap;
+}
+
+.top-mini-link:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.14);
+  box-shadow:0 12px 28px rgba(6,182,212,.18);
+}
+
+@media(max-width:760px){
+  .sticky-header .hero-inner{
+    grid-template-columns:1fr;
+  }
+
+  .left-tools{
+    justify-content:center;
+  }
+
+  .sticky-header .search-box{
+    max-width:100%;
+    margin-left:0;
+  }
+}
+
+    
+    .hero{
+      transition:.25s ease;
+      min-height:auto;
+      position:relative;
+      overflow:hidden;
+      border-radius:42px;
+      background:
+        linear-gradient(145deg,rgba(255,255,255,.48),rgba(255,255,255,.18)),
+        linear-gradient(135deg,rgba(6,182,212,.10),rgba(124,58,237,.10));
+      border:1px solid var(--border);
+      background-clip:padding-box;
+      box-shadow:
+        0 34px 90px rgba(37,99,235,.14),
+        0 10px 30px rgba(6,182,212,.06),
+        inset 0 1px 0 rgba(255,255,255,.86);
+      backdrop-filter:blur(28px);
+      padding:24px 28px 26px;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      width:460px;
+      height:460px;
+      right:-150px;
+      top:-190px;
+      border-radius:999px;
+      background:radial-gradient(circle,rgba(6,182,212,.26),transparent 68%);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
       width:360px;
       height:360px;
-      bottom:-180px;
-      left:-180px;
+      left:-130px;
+      bottom:-170px;
+      border-radius:999px;
+      background:radial-gradient(circle,rgba(124,58,237,.18),transparent 70%);
     }
 
-    .circle4{
-      width:420px;
-      height:420px;
-      bottom:-220px;
-      right:-220px;
+    .hero-inner{position:relative;z-index:2;text-align:center}
+
+    .greeting{
+      display:flex;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 14px;
+      border-radius:999px;
+      color:#164e63;
+      font-size:14px;
+      font-weight:800;
+      background:linear-gradient(135deg,rgba(236,254,255,.66),rgba(239,246,255,.48));
+      border:1px solid rgba(125,211,252,.72);
+      margin-bottom:22px;
+      box-shadow:0 12px 24px rgba(6,182,212,.08);
     }
-
-    .dot{
-      position:absolute;
-      width:18px;
-      height:18px;
-      border-radius:50%;
-      background:rgba(88,150,255,0.16);
-    }
-
-    .dot1{
-      top:70px;
-      right:250px;
-    }
-
-    .dot2{
-      left:52px;
-      top:460px;
-    }
-
-    .dot3{
-      right:260px;
-      bottom:90px;
-    }
-
-    .container{
-
-      width:100%;
-      max-width:1100px;
-
-      padding:20px;
-
-      text-align:center;
-
-      position:relative;
-      z-index:5;
-
-    }
-
-    /* LOGO */
 
     .logo{
-
       display:flex;
       justify-content:center;
       align-items:center;
-
       gap:10px;
-
-      margin-bottom:52px;
-
       user-select:none;
-
+      margin-bottom:22px;
     }
 
     .logo-text{
+      font-size:64px;      
+      font-weight:800;
+      letter-spacing:-8px;
+      line-height:1;
+      background:linear-gradient(180deg,#67e8f9 0%,#38bdf8 22%,#2563eb 68%,#7c3aed 100%);
+      background-clip:text;
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      filter:drop-shadow(0 16px 26px rgba(37,99,235,.15));
+    }
 
-  font-size:118px;
-
-  font-weight:600;
-
-  letter-spacing:-7px;
-
-  line-height:1;
-
-  font-family:'Outfit',sans-serif;
-
-  background:linear-gradient(
-    180deg,
-    #5db8ff 0%,
-    #1574ff 100%
-  );
-
-  background-clip:text;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-
-}
-
-    .globe{
-
-      width:120px;
-      height:120px;
-
+     .globe{
+      width:64px;
+      height:64px;
       border-radius:50%;
-
       overflow:hidden;
-
+      background:linear-gradient(135deg,var(--cyan),var(--blue),var(--purple));
       box-shadow:
-      0 12px 35px rgba(0,90,255,0.25);
-
-      margin:0 4px;
-
-      background:#0b63ff;
-
+        0 18px 44px rgba(37,99,235,.25),
+        0 0 34px rgba(6,182,212,.18);
       display:flex;
       justify-content:center;
       align-items:center;
-
+      border:5px solid rgba(255,255,255,.76);
     }
 
     .globe img{
-
       width:100%;
       height:100%;
-
       object-fit:cover;
-
+      mix-blend-mode:screen;
+      opacity:.86;
     }
 
-    /* SEARCH */
+    .tagline{display:none}
 
-    .search-form{
-      width:100%;
-      display:flex;
-      justify-content:center;
-    }
+    .search-form{width:100%;display:flex;justify-content:center}
 
     .search-box{
-
       width:100%;
-      max-width:980px;
-
-      background:white;
-
-      border:2px solid #b8d2ff;
-
-      border-radius:70px;
-
+      max-width:860px;
+      background:
+        linear-gradient(rgba(255,255,255,.78),rgba(255,255,255,.58)) padding-box,
+        linear-gradient(135deg,var(--cyan),var(--blue),var(--purple)) border-box;
+      border:2px solid transparent;
+      border-radius:28px;
       display:flex;
       align-items:center;
-
-      padding:24px 34px;
-
-      transition:0.25s ease;
-
+      padding:13px 14px 13px 22px;
+      gap:12px;
+      transition:.25s ease;
       box-shadow:
-      0 8px 30px rgba(0,0,0,0.04);
-
+        0 22px 55px rgba(37,99,235,.14),
+        0 0 0 7px rgba(255,255,255,.28),
+        inset 0 1px 0 rgba(255,255,255,.9);
     }
 
     .search-box:hover,
     .search-box:focus-within{
-
-      border-color:#6ea9ff;
-
-      box-shadow:
-      0 16px 40px rgba(66,133,244,0.12);
-
       transform:translateY(-2px);
-
+      box-shadow:
+        0 28px 70px rgba(37,99,235,.20),
+        0 0 34px rgba(6,182,212,.12);
     }
 
     .search-icon{
-
-      font-size:52px;
-
-      color:#4f9dff;
-
-      opacity:0.95;
-
+      width:46px;
+      height:46px;
+      border-radius:17px;
+      display:grid;
+      place-items:center;
+      color:white;
+      background:linear-gradient(135deg,var(--cyan),var(--blue),var(--purple));
+      box-shadow:0 14px 28px rgba(37,99,235,.22);
+      font-size:22px;
+      flex:none;
     }
 
     .search-box input{
-
       flex:1;
-
       border:none;
       outline:none;
-
       background:transparent;
-
-      font-size:28px;
-      font-weight:500;
-
-      color:#5d6575;
-
-      padding-left:20px;
-
+      font-size:21px;
+      font-weight:600;
+      color:#334155;
+      min-width:0;
     }
 
-    .search-box input::placeholder{
-      color:#7f8798;
+    .search-box input::placeholder{color:#94a3b8}
+
+    .search-btn{
+      border:none;
+      border-radius:20px;
+      padding:15px 22px;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      color:white;
+      font-weight:800;
+      cursor:pointer;
+      transition:.25s ease;
+      white-space:nowrap;
+      box-shadow:0 12px 24px rgba(15,23,42,.16);
     }
 
-    /* QUICK LINKS */
+    .search-btn:hover{transform:translateY(-1px);background:#020617}
 
     .quick-links{
-
-      margin-top:54px;
-
-      display:flex;
-      justify-content:center;
-      gap:30px;
-
-      flex-wrap:wrap;
-
-    }
+  display:none;
+}
 
     .quick-links a{
-
-      width:210px;
-
-      background:rgba(255,255,255,0.72);
-
-      backdrop-filter:blur(12px);
-
-      border:2px solid #e2ecff;
-
-      border-radius:28px;
-
-      padding:34px 24px;
-
+      min-height:98px;
+      background:rgba(255,255,255,.42);
+      backdrop-filter:blur(22px);
+      border:1px solid rgba(226,236,255,.94);
+      border-radius:26px;
+      padding:16px 14px;
       text-decoration:none;
-
-      color:#364152;
-
-      transition:0.25s ease;
-
-      box-shadow:
-      0 6px 18px rgba(0,0,0,0.03);
-
+      color:#253044;
+      transition:.25s ease;
+      box-shadow:0 12px 28px rgba(15,23,42,.05);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
     }
 
     .quick-links a:hover{
-
-      transform:translateY(-4px);
-
-      background:white;
-
-      box-shadow:
-      0 16px 34px rgba(0,0,0,0.08);
-
+      transform:translateY(-5px);
+      background:rgba(255,255,255,.76);
+      box-shadow:0 22px 48px rgba(37,99,235,.14);
+      border-color:#bae6fd;
     }
 
     .quick-links .icon{
+      width:44px;
+      height:44px;
+      display:grid;
+      place-items:center;
+      border-radius:17px;
+      font-size:23px;
+      color:white;
+      box-shadow:0 12px 24px rgba(15,23,42,.10);
+    }
 
+    .quick-links a:nth-child(1) .icon{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+    .quick-links a:nth-child(2) .icon{background:linear-gradient(135deg,#7c3aed,#2563eb)}
+    .quick-links a:nth-child(3) .icon{background:linear-gradient(135deg,#0ea5e9,#06b6d4)}
+    .quick-links a:nth-child(4) .icon{background:linear-gradient(135deg,#10b981,#2563eb)}
+
+    .quick-links .label{font-size:15px;font-weight:800}
+
+    .content-grid{
+      display:grid;
+      grid-template-columns:1.35fr .65fr;
+      gap:22px;
+      margin-top:26px;
+      align-items:start;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.42);
+      border:1px solid rgba(255,255,255,.52);
+      border-radius:34px;
+      box-shadow:
+        0 26px 76px rgba(37,99,235,.10),
+        inset 0 1px 0 rgba(255,255,255,.70);
+      backdrop-filter:blur(30px);
+      overflow:hidden;
+    }
+
+    .news-section{padding:24px}
+
+    .news-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .news-title h2{
+      font-size:29px;
+      color:#102033;
+      letter-spacing:-.8px;
+      margin-bottom:6px;
+    }
+
+    .news-title p{color:#64748b;font-size:14px;line-height:1.5}
+
+    .news-tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+    .news-tabs button{
+      border:none;
+      background:rgba(255,255,255,.48);
+      color:#2563eb;
+      padding:10px 13px;
+      border-radius:999px;
+      cursor:pointer;
+      font-weight:800;
+      border:1px solid #dbeafe;
+      transition:.2s ease;
+    }
+
+    .news-tabs button.active,
+    .news-tabs button:hover{
+      background:linear-gradient(135deg,var(--cyan),var(--blue),var(--purple));
+      color:white;
+      box-shadow:0 14px 30px rgba(37,99,235,.23);
+    }
+
+    .featured-news{
+      min-height:310px;
+      border-radius:28px;
+      overflow:hidden;
+      margin-bottom:18px;
+      position:relative;
+      background:linear-gradient(135deg,#0f172a,#1d4ed8,#06b6d4);
+      box-shadow:0 20px 48px rgba(37,99,235,.18);
+    }
+
+    .featured-news a{
       display:block;
+      height:100%;
+      min-height:310px;
+      color:white;
+      text-decoration:none;
+      position:relative;
+    }
 
-      font-size:64px;
+    .featured-news img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
 
+    .featured-news .overlay{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at top right,rgba(6,182,212,.25),transparent 42%),
+        linear-gradient(to top,rgba(2,6,23,.92),rgba(15,23,42,.38),rgba(15,23,42,.10));
+    }
+
+    .featured-content{position:absolute;left:24px;right:24px;bottom:24px}
+
+    .source-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+
+    .source-name{
+      font-size:12px;
+      font-weight:800;
+      color:#1d4ed8;
+      background:#eff6ff;
+      padding:7px 10px;
+      border-radius:999px;
+    }
+
+    .featured-news .source-name{
+      color:white;
+      background:rgba(255,255,255,.22);
+      backdrop-filter:blur(12px);
+    }
+
+    .news-time{font-size:12px;color:#94a3b8;font-weight:700}
+    .featured-news .news-time{color:rgba(255,255,255,.82)}
+
+    .featured-content h3{
+      max-width:760px;
+      font-size:30px;
+      line-height:1.15;
+      letter-spacing:-.8px;
+      margin-bottom:10px;
+    }
+
+    .featured-content p{
+      max-width:720px;
+      font-size:15px;
+      line-height:1.55;
+      color:rgba(255,255,255,.84);
+    }
+
+    .news-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
+    }
+
+    .news-card{
+      background:rgba(255,255,255,.46);
+      border:1px solid rgba(226,236,255,.64);
+      border-radius:26px;
+      overflow:hidden;
+      text-decoration:none;
+      color:#1f2937;
+      box-shadow:0 10px 28px rgba(15,23,42,.04);
+      backdrop-filter:blur(12px);
+      transition:.25s ease;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .news-card:hover{
+      transform:translateY(-5px);
+      box-shadow:0 24px 52px rgba(37,99,235,.14);
+      border-color:#bae6fd;
+      background:white;
+    }
+
+    .thumb{
+      height:145px;
+      background:linear-gradient(135deg,#dbeafe,#cffafe);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .thumb-fallback{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      color:#2563eb;
+      font-size:40px;
+      background:
+        radial-gradient(circle at top left,rgba(255,255,255,.75),transparent 30%),
+        linear-gradient(135deg,#cffafe,#dbeafe,#ede9fe);
+    }
+
+    .card-body{padding:16px;display:flex;flex-direction:column;flex:1}
+
+    .news-card h3{
+      font-size:17px;
+      line-height:1.35;
+      letter-spacing:-.2px;
+      margin-bottom:10px;
+    }
+
+    .news-card p{font-size:13.5px;color:#64748b;line-height:1.5}
+
+    .news-footer{
+      margin-top:auto;
+      padding-top:14px;
+      font-size:13px;
+      color:#2563eb;
+      font-weight:800;
+    }
+
+    .side-panel{padding:22px;position:sticky;top:18px}
+
+    .widget{
+      border-radius:28px;
+      padding:20px;
+      background:
+        radial-gradient(circle at top right,rgba(255,255,255,.18),transparent 38%),
+        linear-gradient(135deg,#06b6d4,#2563eb,#7c3aed);
+      color:white;
+      box-shadow:0 20px 48px rgba(37,99,235,.22);
       margin-bottom:16px;
-
+      overflow:hidden;
+      position:relative;
     }
 
-    .quick-links span{
-
-      font-size:22px;
-      font-weight:500;
-
+    .widget::after{
+      content:"";
+      position:absolute;
+      width:170px;
+      height:170px;
+      border-radius:999px;
+      right:-70px;
+      top:-80px;
+      background:rgba(255,255,255,.16);
     }
 
-    /* FOOTER */
+    .widget small{opacity:.85;font-weight:800}
+    .widget h3{font-size:26px;margin:8px 0;letter-spacing:-.7px}
+    .widget p{font-size:14px;line-height:1.55;opacity:.88}
+
+    .mini-list{display:grid;gap:12px}
+
+    .mini-card{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:13px;
+      border-radius:22px;
+      background:rgba(255,255,255,.42);
+      border:1px solid rgba(226,236,255,.64);
+      text-decoration:none;
+      color:#263244;
+      transition:.2s ease;
+    }
+
+    .mini-card:hover{
+      background:rgba(255,255,255,.74);
+      transform:translateY(-2px);
+      box-shadow:0 15px 32px rgba(37,99,235,.11);
+    }
+
+    .mini-icon{
+      width:42px;
+      height:42px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      color:white;
+      flex:none;
+      font-size:20px;
+    }
+
+    .mini-card:nth-child(1) .mini-icon{background:linear-gradient(135deg,#7c3aed,#2563eb)}
+    .mini-card:nth-child(2) .mini-icon{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+    .mini-card:nth-child(3) .mini-icon{background:linear-gradient(135deg,#0ea5e9,#06b6d4)}
+    .mini-card:nth-child(4) .mini-icon{background:linear-gradient(135deg,#10b981,#2563eb)}
+
+    .mini-card strong{display:block;font-size:14px;margin-bottom:2px}
+    .mini-card span{color:#64748b;font-size:12.5px}
+
+    .loading-news,.error-news{
+      background:rgba(255,255,255,.54);
+      border:1px solid rgba(226,236,255,.70);
+      border-radius:26px;
+      padding:30px;
+      text-align:center;
+      color:#64748b;
+      grid-column:1/-1;
+    }
 
     .footer{
-
-      position:absolute;
-
-      bottom:36px;
-
-      width:100%;
-
       display:flex;
       justify-content:center;
       align-items:center;
       gap:24px;
-
-      color:#4285ff;
-
-      font-size:20px;
-      font-weight:500;
-
-      z-index:5;
-
+      color:#2563eb;
+      font-size:15px;
+      font-weight:800;
+      margin:32px 0 10px;
     }
 
     .footer-line{
-
-      width:140px;
+      width:120px;
       height:2px;
-
-      background:#d7e5ff;
-
+      background:linear-gradient(90deg,transparent,#38bdf8,#7c3aed,transparent);
       border-radius:20px;
-
     }
 
-    /* MOBILE */
-
-    @media(max-width:900px){
-
-      .logo-text{
-        font-size:72px;
-      }
-
-      .globe{
-        width:74px;
-        height:74px;
-      }
-
-      .search-box{
-        padding:18px 20px;
-      }
-
-      .search-box input{
-        font-size:18px;
-      }
-
-      .search-icon{
-        font-size:34px;
-      }
-
-      .quick-links{
-        gap:14px;
-      }
-
-      .quick-links a{
-        width:150px;
-        padding:24px 14px;
-      }
-
-      .quick-links .icon{
-        font-size:42px;
-      }
-
-      .quick-links span{
-        font-size:18px;
-      }
-
-      .footer{
-        font-size:15px;
-      }
-
-      .footer-line{
-        width:60px;
-      }
-
+    @media(max-width:1040px){
+      .content-grid{grid-template-columns:1fr}
+      .side-panel{position:relative;top:0}
+      .quick-links{grid-template-columns:repeat(4,1fr)}
     }
 
-    /* PERFECT MOBILE FIX */
+    @media(max-width:760px){
+      .page{padding:14px}
+      .nav{align-items:flex-start;flex-direction:column}
+      .nav-links{width:100%;justify-content:flex-start}
+      .hero{border-radius:30px;padding:32px 16px 24px}
+      .logo-text{font-size:64px;letter-spacing:-4px}
+      .globe{width:64px;height:64px;border-width:3px}
+      .tagline{font-size:14px}
+      .search-box{border-radius:24px;padding:10px}
+      .search-icon{width:40px;height:40px;border-radius:14px;font-size:18px}
+      .search-box input{font-size:16px;padding-left:0}
+      .search-btn{display:none}
+      .quick-links{grid-template-columns:repeat(2,1fr)}
+      .content-grid{margin-top:16px}
+      .news-section{padding:16px}
+      .news-header{align-items:flex-start;flex-direction:column}
+      .news-title h2{font-size:24px}
+      .featured-news,.featured-news a{min-height:250px}
+      .featured-content{left:18px;right:18px;bottom:18px}
+      .featured-content h3{font-size:22px}
+      .featured-content p{display:none}
+      .news-grid{grid-template-columns:1fr}
+      .thumb{height:155px}
+      .footer{gap:10px;font-size:13px}
+      .footer-line{width:42px}
+    }
 
-@media(max-width:700px){
+    /* =========================
+   WEATHER WIDGET
+========================= */
 
-  html,
-  body{
-    overflow-x:hidden;
+.weather-widget{
+  position:absolute;
+  top:24px;
+  right:24px;
+  z-index:50;
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  padding:14px 16px;
+
+  border-radius:24px;
+
+  background:rgba(255,255,255,.38);
+  backdrop-filter:blur(20px);
+
+  border:1px solid rgba(255,255,255,.55);
+
+  box-shadow:
+    0 14px 34px rgba(0,0,0,.08),
+    inset 0 1px 0 rgba(255,255,255,.5);
+
+  transition:.25s ease;
+}
+
+.weather-widget:hover{
+  transform:translateY(-2px);
+  background:rgba(255,255,255,.52);
+}
+
+.weather-icon{
+  font-size:34px;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.12));
+}
+
+.weather-temp{
+  font-size:20px;
+  font-weight:800;
+  color:#0f172a;
+  line-height:1;
+}
+
+.weather-city{
+  margin-top:4px;
+  font-size:13px;
+  color:#64748b;
+  font-weight:600;
+}
+
+/* DARK MODE */
+
+.dark-mode .weather-widget{
+  background:rgba(15,23,42,.48);
+  border-color:rgba(255,255,255,.08);
+}
+
+.dark-mode .weather-temp{
+  color:white;
+}
+
+.dark-mode .weather-city{
+  color:#cbd5e1;
+}
+
+/* MOBILE */
+
+@media(max-width:760px){
+
+  .weather-widget{
+    top:14px;
+    right:14px;
+
+    padding:10px 12px;
+    border-radius:18px;
+    gap:8px;
   }
 
-  body{
-    padding:20px 0;
+  .weather-icon{
+    font-size:24px;
   }
 
-  .container{
-
-    width:100%;
-
-    max-width:100%;
-
-    padding:16px;
-
-  }
-
-  .logo{
-
-    gap:4px;
-
-    margin-bottom:34px;
-
-  }
-
-  .logo-text{
-
-    font-size:64px;
-
-    letter-spacing:-4px;
-
-  }
-
-  .globe{
-
-    width:62px;
-    height:62px;
-
-    margin:0;
-
-  }
-
-  .search-box{
-
-    padding:16px 18px;
-
-    border-radius:40px;
-
-  }
-
-  .search-icon{
-    font-size:28px;
-  }
-
-  .search-box input{
-
-    font-size:17px;
-
-    padding-left:12px;
-
-  }
-
-  .quick-links{
-
-    gap:12px;
-
-    margin-top:30px;
-
-  }
-
-  .quick-links a{
-
-    width:140px;
-
-    padding:20px 12px;
-
-    border-radius:22px;
-
-  }
-
-  .quick-links .icon{
-
-    font-size:38px;
-
-    margin-bottom:10px;
-
-  }
-
-  .quick-links span{
-
+  .weather-temp{
     font-size:16px;
-
   }
 
-  .footer{
-
-    bottom:16px;
-
-    font-size:14px;
-
-    gap:10px;
-
-  }
-
-  .footer-line{
-    width:45px;
+  .weather-city{
+    font-size:11px;
   }
 
 }
 
-  </style>
+/* ========================================
+   FINAL MOBILE FIX PREMIUM
+======================================== */
 
+@media(max-width:760px){
+
+  /* MAIN LAYOUT */
+
+  .page{
+    padding:10px;
+  }
+
+  .sticky-header{
+    top:6px;
+    margin-bottom:12px;
+  }
+
+  .sticky-header .hero{
+    padding:10px 10px 12px;
+    border-radius:22px;
+  }
+
+  /* HEADER GRID */
+
+  .sticky-header .hero-inner{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    text-align:center;
+  }
+
+  /* LEFT TOOLS */
+
+  .left-tools{
+    width:100%;
+    justify-content:center;
+    gap:6px;
+  }
+
+  .greeting{
+    font-size:11px!important;
+    padding:6px 10px!important;
+    margin:0!important;
+  }
+
+  .top-mini-link{
+    font-size:11px;
+    padding:6px 10px;
+  }
+
+  /* LOGO */
+
+  .sticky-header .logo{
+    transform:none!important;
+    margin:0 auto!important;
+    gap:6px;
+  }
+
+  .sticky-header .logo-text{
+    font-size:28px!important;
+    letter-spacing:-2px!important;
+  }
+
+  .sticky-header .globe{
+    width:28px!important;
+    height:28px!important;
+  }
+
+  /* SEARCH */
+
+  .sticky-header .search-form{
+    width:100%;
+  }
+
+  .sticky-header .search-box{
+    width:100%;
+    max-width:100%!important;
+    margin:0!important;
+
+    padding:7px 8px 7px 10px!important;
+
+    border-radius:18px;
+    gap:8px;
+  }
+
+  .sticky-header .search-icon{
+    width:30px;
+    height:30px;
+    font-size:15px;
+    border-radius:10px;
+  }
+
+  .sticky-header .search-box input{
+    font-size:14px!important;
+  }
+
+  .sticky-header .search-btn{
+    display:none!important;
+  }
+
+  /* CHIPS */
+
+  .search-chips{
+    margin-top:4px!important;
+    gap:6px!important;
+  }
+
+  .search-chips button{
+    font-size:11px!important;
+    padding:6px 10px!important;
+  }
+
+  /* WEATHER */
+
+  .weather-widget{
+    position:relative!important;
+
+    top:auto!important;
+    right:auto!important;
+
+    margin:0 auto 10px;
+
+    width:max-content;
+
+    padding:8px 12px!important;
+    border-radius:16px!important;
+  }
+
+  .weather-icon{
+    font-size:20px!important;
+  }
+
+  .weather-temp{
+    font-size:14px!important;
+  }
+
+  .weather-city{
+    font-size:10px!important;
+  }
+
+  /* NEWS */
+
+  .content-grid{
+    margin-top:14px!important;
+  }
+
+  .news-section{
+    padding:14px!important;
+  }
+
+  .news-title h2{
+    font-size:21px!important;
+  }
+
+  .featured-news{
+    min-height:220px!important;
+    border-radius:22px!important;
+  }
+
+  .featured-content h3{
+    font-size:19px!important;
+  }
+
+  .news-card{
+    border-radius:20px!important;
+  }
+
+  .thumb{
+    height:140px!important;
+  }
+
+  /* FLOAT BUTTONS */
+
+  .floating-tools{
+    right:10px!important;
+    bottom:10px!important;
+  }
+
+  .floating-tools button{
+    width:42px!important;
+    height:42px!important;
+    font-size:16px!important;
+    border-radius:14px!important;
+  }
+
+}
+  </style>
 </head>
 
-<body>
+<body class="dark-mode">
+  <div class="blob one"></div>
+  <div class="blob two"></div>
+  <div class="blob three"></div>
 
-  <!-- BACKGROUND -->
-
-  <div class="circle circle1"></div>
-  <div class="circle circle2"></div>
-  <div class="circle circle3"></div>
-  <div class="circle circle4"></div>
-
-  <div class="dot dot1"></div>
-  <div class="dot dot2"></div>
-  <div class="dot dot3"></div>
-
-  <!-- CONTENT -->
-
-  <div class="container">
-
-    <!-- LOGO -->
-
-    <div class="logo">
-
-      <div class="logo-text">
-        Go
-      </div>
-
-      <div class="globe">
-
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg">
-
-      </div>
-
-      <div class="logo-text">
-        Bin
-      </div>
-
-    </div>
-
-    <!-- SEARCH -->
-
-    <form
-      class="search-form"
-      id="searchForm"
-    >
-
-      <div class="search-box">
-
-        <div class="search-icon">
-          🔎
+  <main class="page">
+    <div class="shell">
+      <nav class="nav">
+        <div class="brand-mini">
+          <div class="brand-dot">G</div>
+          <span>GoBin Browser</span>
         </div>
 
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search the web with GoBin..."
-          autocomplete="off"
-        />
+        <div class="nav-links">
+          <a href="https://binpay.asia/">BinPay</a>
+          <a href="https://gobin.id/mail">BinMail</a>
+          <a href="#news">Berita</a>
+        </div>
+      </nav>
 
+      <div class="weather-widget" id="weatherWidget">
+  <div class="weather-icon" id="weatherIcon">☀️</div>
+
+  <div class="weather-info">
+    <div class="weather-temp" id="weatherTemp">29°C</div>
+    <div class="weather-city" id="weatherCity">Indonesia</div>
+  </div>
+</div>
+
+      <div class="sticky-header">
+      <section class="hero">
+        <div class="hero-inner">
+          <div class="left-tools">
+  <div class="greeting" id="greetingText">✨ Selamat datang di GoBin</div>
+
+  <a class="top-mini-link" href="https://gobin.id/mail">
+    ✉️ <span>BinMail</span>
+  </a>
+
+  <a class="top-mini-link" href="https://binpay.asia/">
+    💳 <span>BinPay</span>
+  </a>
+</div>
+
+          <div class="logo">
+            <div class="logo-text">Go</div>
+            <div class="globe">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg" alt="GoBin Globe">
+            </div>
+            <div class="logo-text">Bin</div>
+          </div>
+
+          <p class="tagline">Cari web, buka BinMail, dan baca update Indonesia dalam satu halaman modern.</p>
+
+          <form class="search-form" id="searchForm">
+            <div class="search-box">
+              <div class="search-icon">⌕</div>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search the web with GoBin..."
+                autocomplete="off"
+              />
+              <button class="search-btn" type="submit">Search</button>
+            </div>
+          </form>
+
+          <div class="quick-links">
+            <a href="https://binpay.asia/">
+              <span class="icon">💳</span>
+              <span class="label">BinPay</span>
+            </a>
+
+            <a href="https://gobin.id/mail">
+              <span class="icon">✉️</span>
+              <span class="label">BinMail</span>
+            </a>
+
+            <a href="https://www.detik.com/" target="_blank" rel="noopener">
+              <span class="icon">📰</span>
+              <span class="label">Detik</span>
+            </a>
+
+            <a href="https://www.kompas.com/" target="_blank" rel="noopener">
+              <span class="icon">🇮🇩</span>
+              <span class="label">Kompas</span>
+            </a>
+          </div>
+        </div>
+     </section>
+    </div>
+
+      <div class="content-grid" id="news">
+        <section class="panel news-section">
+          <div class="news-header">
+            <div class="news-title">
+              <h2>Berita Indonesia Hari Ini</h2>
+              <p>Feed Detik dan Kompas dengan layout modern seperti halaman browser baru.</p>
+            </div>
+
+            <div class="news-tabs">
+              <button class="active" onclick="setNewsFilter('all', this)">Semua</button>
+              <button onclick="setNewsFilter('detik', this)">Detik</button>
+              <button onclick="setNewsFilter('kompas', this)">Kompas</button>
+              <button onclick="setNewsFilter('cnn', this)">CNN</button>
+              <button onclick="setNewsFilter('dubai', this)">Dubai</button>
+            </div>
+          </div>
+
+          <div class="featured-news" id="featuredNews">
+            <div class="loading-news">Memuat berita pilihan...</div>
+          </div>
+
+          <div class="news-grid" id="newsGrid">
+            <div class="loading-news">Memuat berita terbaru...</div>
+          </div>
+        </section>
+
+        <aside class="panel side-panel">
+          <div class="widget">
+            <small>GoBin Today</small>
+            <h3 id="todayText">Hari ini</h3>
+            <p>Shortcut cepat, berita Indonesia, dan pencarian web dalam tampilan yang lebih premium.</p>
+          </div>
+
+          <div class="mini-list">
+            <a class="mini-card" href="https://gobin.id/mail">
+              <div class="mini-icon">✉️</div>
+              <div>
+                <strong>Buka BinMail</strong>
+                <span>Email Gobin kamu</span>
+              </div>
+            </a>
+
+            <a class="mini-card" href="https://binpay.asia/">
+              <div class="mini-icon">💳</div>
+              <div>
+                <strong>Buka BinPay</strong>
+                <span>Dashboard pembayaran</span>
+              </div>
+            </a>
+
+            <a class="mini-card" href="https://news.detik.com/" target="_blank" rel="noopener">
+              <div class="mini-icon">⚡</div>
+              <div>
+                <strong>News Flash</strong>
+                <span>Update cepat Detik</span>
+              </div>
+            </a>
+
+            <a class="mini-card" href="https://www.kompas.com/" target="_blank" rel="noopener">
+              <div class="mini-icon">🌏</div>
+              <div>
+                <strong>Kompas News</strong>
+                <span>Berita nasional</span>
+              </div>
+            </a>
+          </div>
+        </aside>
       </div>
 
-    </form>
-
-    <!-- QUICK LINKS -->
-
-    <div class="quick-links">
-    <a href="https://binpay.asia/">
-    <span class="icon">
-      💳
-    </span>
-
-    <span>
-      BinPay
-    </span>
-    </a>
-    </a>
-
-      <a href="https://gobin.id/mail">
-
-        <span class="icon">
-          ✉️
-        </span>
-
-        <span>
-          BinMail
-        </span>
-
-      </a>
-
+      <div class="footer">
+        <div class="footer-line"></div>
+        <div>© 2026 GoBin</div>
+        <div class="footer-line"></div>
+      </div>
     </div>
-
-  </div>
-
-  <!-- FOOTER -->
-
-  <div class="footer">
-
-    <div class="footer-line"></div>
-
-    <div>
-      © 2026 GoBin
-    </div>
-
-    <div class="footer-line"></div>
-
-  </div>
-
-  <!-- SCRIPT -->
+  </main>
 
   <script>
+    const form = document.getElementById("searchForm")
+    const input = document.getElementById("searchInput")
+    const newsGrid = document.getElementById("newsGrid")
+    const featuredNews = document.getElementById("featuredNews")
+    const greetingText = document.getElementById("greetingText")
+    const todayText = document.getElementById("todayText")
 
-    const form =
-    document.getElementById('searchForm');
+    let allNews = []
+    let activeFilter = "all"
 
-    const input =
-    document.getElementById('searchInput');
+    setGreeting()
 
-    form.addEventListener('submit', function(e){
+    form.addEventListener("submit", function(e){
+      e.preventDefault()
 
-      e.preventDefault();
+      const query = input.value.trim()
 
-      const query =
-      input.value.trim();
+      if(query !== ""){
+        window.location.href = `/search?q=${encodeURIComponent(query)}`
+      }
+    })
 
-      if(query !== ''){
+    const newsSources = [
 
-        window.location.href =
-        `/search?q=${encodeURIComponent(query)}`;
+  {
+    name:"Detik",
+    key:"detik",
+    rss:"https://rss.detik.com/index.php/detikcom"
+  },
 
+  {
+    name:"Kompas",
+    key:"kompas",
+    rss:"https://www.kompas.com/rss"
+  },
+
+  {
+    name:"CNN Indonesia",
+    key:"cnn",
+    rss:"https://www.cnnindonesia.com/internasional/rss"
+  },
+
+  {
+    name:"Dubai News",
+    key:"dubai",
+    rss:"https://rss.nytimes.com/services/xml/rss/nyt/MiddleEast.xml"
+  }
+
+]
+
+    async function fetchRSS(source){
+      const url =
+      "https://api.rss2json.com/v1/api.json?rss_url=" +
+      encodeURIComponent(source.rss)
+
+      const res = await fetch(url)
+      const data = await res.json()
+
+      if(!data.items){
+        return []
       }
 
-    });
+      return data.items.slice(0, 9).map(item => ({
+        source:source.name,
+        key:source.key,
+        title:cleanText(item.title || "Tanpa judul"),
+        description:cleanText(item.description || ""),
+        link:item.link || "#",
+        pubDate:item.pubDate || "",
+        thumbnail:getThumbnail(item)
+      }))
+    }
 
+    async function loadNews(){
+      try{
+        newsGrid.innerHTML = `<div class="loading-news">Memuat berita terbaru...</div>`
+        featuredNews.innerHTML = `<div class="loading-news">Memuat berita pilihan...</div>`
+
+        const results = await Promise.all(
+          newsSources.map(source => fetchRSS(source))
+        )
+
+        allNews = results
+          .flat()
+          .sort((a,b) => new Date(b.pubDate) - new Date(a.pubDate))
+          .slice(0, 30)
+
+        if(allNews.length === 0){
+          showFallbackNews()
+          return
+        }
+
+        renderNews()
+
+      }catch(err){
+        console.log(err)
+        showFallbackNews()
+      }
+    }
+
+    function renderNews(){
+      const filtered =
+      activeFilter === "all"
+      ? allNews
+      : allNews.filter(item => item.key === activeFilter)
+
+      if(filtered.length === 0){
+        featuredNews.innerHTML = ""
+        newsGrid.innerHTML = `
+          <div class="error-news">
+            Belum ada berita untuk kategori ini.
+          </div>
+        `
+        return
+      }
+
+      const featured = filtered[0]
+      const rest = filtered.slice(1, 9)
+
+      featuredNews.innerHTML = `
+        <a href="${featured.link}" target="_blank" rel="noopener">
+          ${featured.thumbnail ? `<img src="${featured.thumbnail}" alt="">` : ""}
+          <div class="overlay"></div>
+          <div class="featured-content">
+            <div class="source-row">
+              <span class="source-name">${featured.source}</span>
+              <span class="news-time">${formatDate(featured.pubDate)}</span>
+            </div>
+            <h3>${featured.title}</h3>
+            <p>${shortText(featured.description, 150)}</p>
+          </div>
+        </a>
+      `
+
+      newsGrid.innerHTML = rest.map(item => `
+        <a class="news-card" href="${item.link}" target="_blank" rel="noopener">
+          <div class="thumb">
+            ${
+              item.thumbnail
+              ? `<img src="${item.thumbnail}" alt="">`
+              : `<div class="thumb-fallback">${item.key === "detik"
+? "📰"
+: item.key === "cnn"
+? "🌍"
+: item.key === "dubai"
+? "🇦🇪"
+: "🇮🇩"}</div>`
+            }
+          </div>
+
+          <div class="card-body">
+            <div class="source-row">
+              <span class="source-name">${item.source}</span>
+              <span class="news-time">${formatDate(item.pubDate)}</span>
+            </div>
+
+            <h3>${item.title}</h3>
+            <p>${shortText(item.description, 105)}</p>
+
+            <div class="news-footer">
+              Baca selengkapnya →
+            </div>
+          </div>
+        </a>
+      `).join("")
+    }
+
+    function setNewsFilter(filter, button){
+      activeFilter = filter
+
+      document.querySelectorAll(".news-tabs button").forEach(btn => {
+        btn.classList.remove("active")
+      })
+
+      button.classList.add("active")
+      renderNews()
+    }
+
+    function showFallbackNews(){
+      allNews = [
+        {
+          source:"Detik",
+          key:"detik",
+          title:"Buka Detik untuk melihat berita terbaru Indonesia",
+          description:"Klik kartu ini untuk membuka halaman berita Detik secara langsung.",
+          link:"https://www.detik.com/",
+          pubDate:new Date().toISOString(),
+          thumbnail:""
+        },
+        {
+          source:"Kompas",
+          key:"kompas",
+          title:"Buka Kompas untuk melihat berita terbaru Indonesia",
+          description:"Klik kartu ini untuk membuka halaman berita Kompas secara langsung.",
+          link:"https://www.kompas.com/",
+          pubDate:new Date().toISOString(),
+          thumbnail:""
+        },
+        {
+          source:"Detik",
+          key:"detik",
+          title:"Berita Nasional, Ekonomi, Teknologi, dan Hiburan",
+          description:"GoBin menyiapkan akses cepat ke portal berita Indonesia.",
+          link:"https://news.detik.com/",
+          pubDate:new Date().toISOString(),
+          thumbnail:""
+        },
+        {
+          source:"Kompas",
+          key:"kompas",
+          title:"Update Berita Indonesia dari Kompas",
+          description:"Akses cepat ke berita nasional dan internasional dari Kompas.",
+          link:"https://www.kompas.com/",
+          pubDate:new Date().toISOString(),
+          thumbnail:""
+        }
+      ]
+
+      renderNews()
+    }
+
+    function getThumbnail(item){
+      if(item.thumbnail){
+        return item.thumbnail
+      }
+
+      if(item.enclosure && item.enclosure.link){
+        return item.enclosure.link
+      }
+
+      const desc = item.description || ""
+      const match = desc.match(/<img[^>]+src=["']([^"']+)["']/i)
+
+      if(match && match[1]){
+        return match[1]
+      }
+
+      return ""
+    }
+
+    function cleanText(text){
+      const div = document.createElement("div")
+      div.innerHTML = text
+
+      return (div.textContent || div.innerText || "")
+        .replace(/\s+/g, " ")
+        .trim()
+    }
+
+    function shortText(text, max){
+      if(!text){
+        return "Klik untuk membaca berita selengkapnya."
+      }
+
+      if(text.length <= max){
+        return text
+      }
+
+      return text.substring(0, max) + "..."
+    }
+
+    function formatDate(dateValue){
+      if(!dateValue){
+        return "Baru"
+      }
+
+      const date = new Date(dateValue)
+
+      if(isNaN(date.getTime())){
+        return "Baru"
+      }
+
+      return date.toLocaleDateString("id-ID", {
+        day:"2-digit",
+        month:"short",
+        hour:"2-digit",
+        minute:"2-digit"
+      })
+    }
+
+    function setGreeting(){
+      const now = new Date()
+      const hour = now.getHours()
+
+      let greet = "Selamat datang"
+
+      if(hour >= 4 && hour < 11){
+        greet = "Selamat pagi"
+      }else if(hour >= 11 && hour < 15){
+        greet = "Selamat siang"
+      }else if(hour >= 15 && hour < 18){
+        greet = "Selamat sore"
+      }else{
+        greet = "Selamat malam"
+      }
+
+      greetingText.innerText = `✨ ${greet} di GoBin`
+      todayText.innerText = now.toLocaleDateString("id-ID", {
+        weekday:"long",
+        day:"2-digit",
+        month:"long"
+      })
+    }
+
+    loadNews()
   </script>
+
+<!-- FLOAT ACTIONS -->
+<div class="floating-tools">
+  <button id="themeToggle">🌙</button>
+  <button onclick="refreshNews()">⟳</button>
+</div>
+
+<script>
+/* =========================
+   LIVE CLOCK
+========================= */
+
+const liveClock = document.createElement("div")
+liveClock.className = "live-clock"
+document.querySelector(".widget").appendChild(liveClock)
+
+function updateClock(){
+  const now = new Date()
+
+  liveClock.innerHTML =
+    now.toLocaleTimeString("id-ID",{
+      hour:"2-digit",
+      minute:"2-digit",
+      second:"2-digit"
+    })
+}
+
+setInterval(updateClock,1000)
+updateClock()
+
+/* =========================
+   SEARCH CHIPS
+========================= */
+
+const chips = document.createElement("div")
+chips.className = "search-chips"
+
+chips.innerHTML = `
+<button>AI</button>
+<button>Crypto</button>
+<button>Teknologi</button>
+<button>Indonesia</button>
+<button>Cuaca</button>
+`
+
+document.querySelector(".hero-inner").appendChild(chips)
+
+chips.querySelectorAll("button").forEach(btn=>{
+  btn.onclick = ()=>{
+    input.value = btn.innerText
+    form.dispatchEvent(new Event("submit"))
+  }
+})
+
+/* =========================
+   DARK MODE
+========================= */
+
+const toggleBtn = document.getElementById("themeToggle")
+toggleBtn.innerHTML = "☀️"
+
+toggleBtn.onclick = ()=>{
+  document.body.classList.toggle("dark-mode")
+
+  if(document.body.classList.contains("dark-mode")){
+    toggleBtn.innerHTML = "☀️"
+  }else{
+    toggleBtn.innerHTML = "🌙"
+  }
+}
+
+/* =========================
+   REFRESH NEWS
+========================= */
+
+function refreshNews(){
+  newsGrid.innerHTML =
+  `<div class="loading-news">Refreshing news...</div>`
+
+  featuredNews.innerHTML =
+  `<div class="loading-news">Refreshing...</div>`
+
+  loadNews()
+}
+
+/* =========================
+   CARD ANIMATION
+========================= */
+
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add("show-card")
+    }
+  })
+})
+
+setTimeout(()=>{
+  document.querySelectorAll(".news-card").forEach(card=>{
+    observer.observe(card)
+  })
+},2000)
+
+</script>
+
+<style>
+
+/* =========================
+   LIVE CLOCK
+========================= */
+
+.live-clock{
+  margin-top:14px;
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+
+/* =========================
+   SEARCH CHIPS
+========================= */
+
+.search-chips{
+  margin-top:20px;
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.search-chips button{
+  border:none;
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.6);
+  color:#1e3a8a;
+  font-weight:700;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.search-chips button:hover{
+  transform:translateY(-2px);
+  background:white;
+}
+
+/* =========================
+   FLOATING BUTTONS
+========================= */
+
+.floating-tools{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:999;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.floating-tools button{
+  width:54px;
+  height:54px;
+  border:none;
+  border-radius:20px;
+  font-size:22px;
+  cursor:pointer;
+  background:rgba(255,255,255,.45);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 10px 24px rgba(0,0,0,.08);
+  transition:.25s;
+}
+
+.floating-tools button:hover{
+  transform:translateY(-3px) scale(1.04);
+  background:white;
+}
+
+/* =========================
+   CARD ANIMATION
+========================= */
+
+.news-card{
+  opacity:0;
+  transform:translateY(20px);
+}
+
+.news-card.show-card{
+  opacity:1;
+  transform:translateY(0);
+  transition:
+    opacity .6s ease,
+    transform .6s ease;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+
+.dark-mode{
+  color:#e2e8f0;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(6,182,212,.18), transparent 31%),
+    radial-gradient(circle at 88% 8%, rgba(124,58,237,.18), transparent 30%),
+    linear-gradient(135deg,#020617 0%,#0f172a 45%,#111827 100%);
+}
+
+.dark-mode .hero,
+.dark-mode .panel,
+.dark-mode .news-card,
+.dark-mode .mini-card,
+.dark-mode .quick-links a{
+  background:rgba(15,23,42,.48)!important;
+  color:white!important;
+  border-color:rgba(255,255,255,.08)!important;
+}
+
+.dark-mode .news-title h2,
+.dark-mode .news-card h3,
+.dark-mode .mini-card strong,
+.dark-mode .tagline{
+  color:white!important;
+}
+
+.dark-mode .news-card p,
+.dark-mode .mini-card span,
+.dark-mode .news-title p{
+  color:#cbd5e1!important;
+}
+
+.dark-mode .search-box{
+  background:
+    linear-gradient(rgba(15,23,42,.88),rgba(15,23,42,.74)) padding-box,
+    linear-gradient(135deg,#06b6d4,#2563eb,#7c3aed) border-box!important;
+}
+
+.dark-mode input{
+  color:white!important;
+}
+
+.dark-mode .search-chips button{
+  background:rgba(15,23,42,.58);
+  color:white;
+}
+
+.dark-mode .floating-tools button{
+  background:rgba(15,23,42,.58);
+  color:white;
+}
+
+@media(max-width:760px){
+
+  .live-clock{
+    font-size:26px;
+  }
+
+  .floating-tools{
+    right:12px;
+    bottom:12px;
+  }
+
+  .floating-tools button{
+    width:48px;
+    height:48px;
+    font-size:18px;
+  }
+
+}
+
+</style>
+
+<script>
+
+/* =========================
+   SIMPLE WEATHER
+========================= */
+
+function loadWeather(){
+
+  const hour = new Date().getHours()
+
+  let icon = "☀️"
+  let temp = "29°C"
+
+  if(hour >= 18 || hour <= 5){
+    icon = "🌙"
+    temp = "24°C"
+  }else if(hour >= 12){
+    icon = "⛅"
+    temp = "31°C"
+  }
+
+  document.getElementById("weatherIcon").innerText = icon
+  document.getElementById("weatherTemp").innerText = temp
+
+  document.getElementById("weatherCity").innerText =
+  "Indonesia"
+}
+
+loadWeather()
+
+</script>
 
 </body>
 </html>

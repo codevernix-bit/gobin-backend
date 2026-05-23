@@ -18,9 +18,10 @@
     .compose-btn{background:#4285F4;color:white;border:none;padding:14px;border-radius:14px;font-size:15px;font-weight:500;cursor:pointer;margin-bottom:28px;transition:.2s ease;box-shadow:0 8px 18px rgba(66,133,244,.18)}
     .compose-btn:hover{opacity:.92}
     .menu{display:flex;flex-direction:column;gap:8px}
-    .menu a{text-decoration:none;color:#374151;padding:13px 16px;border-radius:12px;font-size:15px;transition:.2s ease;cursor:pointer}
+    .menu a{text-decoration:none;color:#374151;padding:13px 16px;border-radius:12px;font-size:15px;transition:.2s ease;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
     .menu a:hover{background:#f3f7ff;color:#4285F4}
     .menu .active{background:#e8f0fe;color:#4285F4;font-weight:500}
+    .unread-badge{background:#ef4444;color:white;font-size:11px;padding:2px 7px;border-radius:999px;display:none}
     .profile{margin-top:auto;padding-top:18px;border-top:1px solid #e5e7eb}
     .profile-name{font-size:15px;font-weight:600;color:#202124}
     .profile-email{font-size:13px;color:#5f6368;margin-top:3px}
@@ -32,6 +33,8 @@
     .mail-container{flex:1;overflow-y:auto;padding:20px}
     .mail-item{background:white;border-radius:18px;padding:18px 20px;margin-bottom:14px;transition:.2s ease;cursor:pointer;border:1px solid transparent}
     .mail-item:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.06);border-color:#dbeafe}
+    .mail-item.unread{background:#eef4ff;border-color:#bfdbfe}
+    .mail-item.unread .mail-name,.mail-item.unread .mail-subject{font-weight:700;color:#111827}
     .mail-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px}
     .mail-name{font-size:15px;font-weight:600;color:#202124;word-break:break-word}
     .mail-time{font-size:12px;color:#6b7280;white-space:nowrap}
@@ -39,33 +42,10 @@
     .mail-preview{font-size:13px;color:#6b7280;line-height:1.5;white-space:pre-wrap;word-break:break-word}
     .empty{background:white;border-radius:18px;padding:28px;text-align:center;color:#6b7280}
     .loading{background:white;border-radius:18px;padding:28px;text-align:center;color:#4285F4}
-
-    .detail-actions{
-      display:flex;
-      gap:10px;
-      margin-bottom:18px;
-      flex-wrap:wrap;
-    }
-
-    .back-btn,
-    .reply-btn{
-      border:none;
-      padding:10px 16px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:600;
-    }
-
-    .back-btn{
-      background:#e5e7eb;
-      color:#111827;
-    }
-
-    .reply-btn{
-      background:#4285F4;
-      color:white;
-    }
-
+    .detail-actions{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+    .back-btn,.reply-btn{border:none;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:600}
+    .back-btn{background:#e5e7eb;color:#111827}
+    .reply-btn{background:#4285F4;color:white}
     .compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:9999;padding:16px}
     .compose-box{width:100%;max-width:520px;background:white;border-radius:20px;padding:24px}
     .compose-title{font-size:22px;font-weight:600;margin-bottom:20px}
@@ -83,7 +63,7 @@
       .logo{font-size:42px;margin-bottom:18px}
       .compose-btn{width:100%;margin-bottom:18px}
       .menu{display:flex;flex-direction:row;gap:10px;overflow-x:auto;padding-bottom:10px}
-      .menu a{min-width:120px;text-align:center;flex:none}
+      .menu a{min-width:120px;text-align:center;flex:none;justify-content:center}
       .profile{margin-top:20px}
       .main{width:100%}
       .topbar{padding:14px;height:auto}
@@ -107,11 +87,14 @@
     <button class="compose-btn" onclick="openCompose()">✉️ Compose</button>
 
     <div class="menu">
-      <a data-folder="inbox" class="active">📥 Inbox</a>
-      <a data-folder="sent">📤 Sent</a>
-      <a data-folder="drafts">📝 Draft</a>
-      <a data-folder="starred">⭐ Starred</a>
-      <a data-folder="trash">🗑 Trash</a>
+      <a data-folder="inbox" class="active">
+        <span>📥 Inbox</span>
+        <span id="unreadBadge" class="unread-badge">0</span>
+      </a>
+      <a data-folder="sent"><span>📤 Sent</span></a>
+      <a data-folder="drafts"><span>📝 Draft</span></a>
+      <a data-folder="starred"><span>⭐ Starred</span></a>
+      <a data-folder="trash"><span>🗑 Trash</span></a>
     </div>
 
     <div class="profile">
@@ -156,6 +139,7 @@ const user = JSON.parse(localStorage.getItem("binmailUser"))
 let currentFolder = "inbox"
 let currentEmails = []
 let currentShownEmails = []
+let unreadCount = 0
 
 if(!user){
   window.location.href = "/mail"
@@ -185,9 +169,7 @@ document.querySelector(".profile").appendChild(logoutBtn)
 document.querySelectorAll(".menu a").forEach(link => {
   link.addEventListener("click", (e) => {
     e.preventDefault()
-
     const folder = link.dataset.folder
-
     setActiveMenu(folder)
     loadMail(folder)
   })
@@ -215,7 +197,6 @@ function setActiveMenu(folder){
   }
 
   document.getElementById("folderTitle").innerText = labels[folder] || "Inbox"
-
   currentFolder = folder
 }
 
@@ -237,6 +218,7 @@ async function loadMail(folder = "inbox"){
     currentShownEmails = currentEmails
 
     renderEmails(currentEmails)
+    loadUnread()
 
   }catch(err){
     console.log(err)
@@ -272,11 +254,13 @@ function renderEmails(emails, keyword = ""){
     const subject = escapeHtml(mail.subject || "No Subject")
     const message = escapeHtml(mail.message || "")
     const target = escapeHtml(name || "-")
+    const unreadClass = (!mail.read && currentFolder === "inbox") ? "unread" : ""
+    const unreadDot = (!mail.read && currentFolder === "inbox") ? " 🔴" : ""
 
     return `
-      <div class="mail-item" onclick="openEmail(${index})">
+      <div class="mail-item ${unreadClass}" onclick="openEmail(${index})">
         <div class="mail-top">
-          <div class="mail-name">${target}</div>
+          <div class="mail-name">${target}${unreadDot}</div>
           <div class="mail-time">${time}</div>
         </div>
         <div class="mail-subject">${subject}</div>
@@ -286,12 +270,32 @@ function renderEmails(emails, keyword = ""){
   }).join("")
 }
 
-function openEmail(index){
+async function openEmail(index){
   const mail = currentShownEmails[index]
   const box = document.getElementById("mailContainer")
 
   if(!mail){
     return
+  }
+
+  if(currentFolder === "inbox" && !mail.read && mail._id){
+    try{
+      await fetch(`${API}/api/read/${mail._id}`, {
+        method:"PATCH"
+      })
+
+      mail.read = true
+
+      const originalMail = currentEmails.find(item => item._id === mail._id)
+      if(originalMail){
+        originalMail.read = true
+      }
+
+      loadUnread()
+
+    }catch(err){
+      console.log(err)
+    }
   }
 
   const canReply = currentFolder !== "drafts"
@@ -360,6 +364,29 @@ function openDraft(to, subject, message){
   document.getElementById("subject").value = subject
   document.getElementById("message").value = message
   document.getElementById("message").focus()
+}
+
+async function loadUnread(){
+  try{
+    const res = await fetch(`${API}/api/unread/${encodeURIComponent(user.email)}`)
+    const data = await res.json()
+
+    if(data.success){
+      unreadCount = data.unread || 0
+
+      const badge = document.getElementById("unreadBadge")
+
+      if(unreadCount > 0){
+        badge.style.display = "inline-block"
+        badge.innerText = unreadCount
+      }else{
+        badge.style.display = "none"
+      }
+    }
+
+  }catch(err){
+    console.log(err)
+  }
 }
 
 function formatTime(value){
@@ -488,6 +515,7 @@ async function saveDraft(){
 }
 
 loadMail("inbox")
+loadUnread()
 </script>
 
 </body>
