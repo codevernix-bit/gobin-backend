@@ -5,6 +5,7 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcryptjs")
 const cors = require("cors")
 const nodemailer = require("nodemailer")
+const axios = require("axios")
 
 const app = express()
 
@@ -217,27 +218,51 @@ app.post("/api/send", async(req,res)=>{
         })
       }
 
-      await transporter.sendMail({
-        from: `"${process.env.SMTP_FROM_NAME || "BinMail"}" <${process.env.SMTP_USER}>`,
-        replyTo: cleanFrom,
-        to: cleanTo,
-        subject: cleanSubject,
-        text:
-`From: ${cleanFrom}
+      await axios.post(
+  "https://api.brevo.com/v3/smtp/email",
+  {
+    sender: {
+      name: process.env.SMTP_FROM_NAME || "BinMail",
+      email: process.env.SMTP_USER
+    },
+    
 
-${cleanMessage}`,
-        html: `
-          <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
-            <p style="font-size:13px;color:#6b7280">From: <b>${cleanFrom}</b></p>
-            <div style="white-space:pre-wrap">${escapeHtmlServer(cleanMessage)}</div>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
-            <p style="font-size:12px;color:#6b7280">
-              Sent via BinMail / GoBin
-            </p>
-          </div>
-        `
-      })
+    to: [
+      {
+        email: cleanTo
+      }
+    ],
+    
+
+    subject: cleanSubject,
+
+    htmlContent: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+        <p style="font-size:13px;color:#6b7280">
+          From: <b>${cleanFrom}</b>
+        </p>
+
+        <div style="white-space:pre-wrap">
+          ${escapeHtmlServer(cleanMessage)}
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
+
+        <p style="font-size:12px;color:#6b7280">
+          Sent via BinMail / GoBin
+        </p>
+      </div>
+    `
+  },
+  
+
+  {
+    headers: {
+      "api-key": process.env.BREVO_API_KEY,
+      "Content-Type": "application/json"
     }
+  }
+)
 
     const newEmail = new Email({
       from:cleanFrom,
@@ -256,7 +281,7 @@ ${cleanMessage}`,
       message: external
         ? "Email berhasil dikirim ke email luar"
         : "Email berhasil dikirim"
-    })
+    }) }
 
   }catch(err){
     console.log("SEND ERROR:", err)
