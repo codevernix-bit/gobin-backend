@@ -222,9 +222,9 @@ app.post("/api/send", async(req,res)=>{
   "https://api.brevo.com/v3/smtp/email",
   {
     sender: {
-      name: process.env.SMTP_FROM_NAME || "BinMail",
-      email: process.env.SMTP_USER
-    },
+  name: "GoBin",
+  email: "codevernix@gmail.com"
+},
     
 
     to: [
