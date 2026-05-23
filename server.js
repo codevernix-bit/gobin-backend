@@ -502,15 +502,10 @@ async function startServer(){
     console.log("MongoDB Connected")
 
     if(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS){
-      try{
-        await transporter.verify()
-        console.log("SMTP Ready")
-      }catch(err){
-        console.log("SMTP Verify Error:", err.message)
-      }
-    }else{
-      console.log("SMTP not configured")
-    }
+  console.log("SMTP configured")
+}else{
+  console.log("SMTP not configured")
+}
 
     const PORT = process.env.PORT || 8080
 
