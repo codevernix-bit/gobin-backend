@@ -8,8 +8,41 @@ const bcrypt = require("bcryptjs")
 const cors = require("cors")
 const nodemailer = require("nodemailer")
 const axios = require("axios")
+const multer = require("multer")
+const path = require("path")
+const fs = require("fs")
 
 const app = express()
+
+// =========================
+// UPLOAD ATTACHMENT
+// =========================
+
+const uploadDir = path.join(__dirname, "uploads")
+
+if(!fs.existsSync(uploadDir)){
+  fs.mkdirSync(uploadDir)
+}
+
+app.use("/uploads", express.static(uploadDir))
+
+const storage = multer.diskStorage({
+  destination:(req,file,cb)=>{
+    cb(null, uploadDir)
+  },
+
+  filename:(req,file,cb)=>{
+    const unique = Date.now() + "-" + Math.round(Math.random()*1E9)
+    cb(null, unique + "-" + file.originalname)
+  }
+})
+
+const upload = multer({
+  storage,
+  limits:{
+    fileSize: 10 * 1024 * 1024
+  }
+})
 
 app.use(cors({ origin: "*" }))
 app.use(express.json())
@@ -65,6 +98,10 @@ const emailSchema = new mongoose.Schema({
   starred:{ type:Boolean, default:false },
   trash:{ type:Boolean, default:false },
   external:{ type:Boolean, default:false },
+  attachments:{
+  type:Array,
+  default:[]
+},
   createdAt:{ type:Date, default:Date.now }
 })
 
@@ -174,7 +211,7 @@ app.post("/api/login", async(req,res)=>{
    SEND EMAIL
 ========================= */
 
-app.post("/api/send", async(req,res)=>{
+app.post("/api/send", upload.array("attachments", 5), async(req,res)=>{
   try{
     const { from, to, subject, message } = req.body
 
@@ -189,6 +226,13 @@ app.post("/api/send", async(req,res)=>{
     const cleanTo = String(to).trim().toLowerCase()
     const cleanSubject = subject || "No Subject"
     const cleanMessage = message || ""
+
+    const attachments = (req.files || []).map(file => ({
+  filename:file.originalname,
+  path:`/uploads/${file.filename}`,
+  size:file.size,
+  mimetype:file.mimetype
+}))
 
     const sender = await User.findOne({ email:cleanFrom })
 
@@ -235,6 +279,11 @@ app.post("/api/send", async(req,res)=>{
 
           subject:cleanSubject,
 
+          attachment: attachments.map(file => ({
+  url: `${req.protocol}://${req.get("host")}${file.path}`,
+  name: file.filename
+})),
+
           htmlContent:`
             <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
               <p style="font-size:13px;color:#6b7280">
@@ -267,6 +316,7 @@ app.post("/api/send", async(req,res)=>{
       to:cleanTo,
       subject:cleanSubject,
       message:cleanMessage,
+      attachments,
       folder:"inbox",
       read:external ? true : false,
       external
