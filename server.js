@@ -559,6 +559,43 @@ app.patch("/api/trash/:id", async(req,res)=>{
     })
   }
 })
+
+app.patch("/api/trash-bulk", async(req,res)=>{
+  try{
+
+    const { ids } = req.body
+
+    if(!Array.isArray(ids) || ids.length === 0){
+      return res.status(400).json({
+        success:false,
+        message:"Tidak ada email dipilih"
+      })
+    }
+
+    await Email.updateMany(
+      {
+        _id:{ $in:ids }
+      },
+      {
+        folder:"trash",
+        read:true
+      }
+    )
+
+    res.json({
+      success:true,
+      message:`${ids.length} email dipindah ke Trash`
+    })
+
+  }catch(err){
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+  }
+})
 /* =========================
    USER
 ========================= */
