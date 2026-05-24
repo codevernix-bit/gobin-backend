@@ -98,6 +98,7 @@ const emailSchema = new mongoose.Schema({
   starred:{ type:Boolean, default:false },
   trash:{ type:Boolean, default:false },
   external:{ type:Boolean, default:false },
+  gmailUid:{ type:String, default:"" },
   attachments:{
   type:Array,
   default:[]
@@ -623,9 +624,8 @@ async function syncGmailInbox(){
         const gmailUid = `gmail-${msg.uid}`
 
         const exists = await Email.findOne({
-          external:true,
-          message:gmailUid
-        })
+        gmailUid:gmailUid
+      })
 
         if(exists) continue
 
@@ -644,6 +644,7 @@ async function syncGmailInbox(){
           ""
 
         await Email.create({
+          gmailUid:gmailUid,
           from:cleanFrom,
           to:cleanTo,
           subject:cleanSubject,
