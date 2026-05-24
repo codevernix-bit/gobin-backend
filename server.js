@@ -599,7 +599,14 @@ app.patch("/api/trash-bulk", async(req,res)=>{
 
 app.delete("/api/delete/:id", async(req,res)=>{
   try{
-    await Email.findByIdAndDelete(req.params.id)
+    await Email.findByIdAndUpdate(
+      req.params.id,
+      {
+        folder:"deleted",
+        trash:true,
+        read:true
+      }
+    )
 
     res.json({
       success:true,
@@ -617,13 +624,20 @@ app.delete("/api/delete/:id", async(req,res)=>{
 
 app.delete("/api/delete-trash-all/:email", async(req,res)=>{
   try{
-    await Email.deleteMany({
-      $or:[
-        { to:req.params.email },
-        { from:req.params.email }
-      ],
-      folder:"trash"
-    })
+    await Email.updateMany(
+      {
+        $or:[
+          { to:req.params.email },
+          { from:req.params.email }
+        ],
+        folder:"trash"
+      },
+      {
+        folder:"deleted",
+        trash:true,
+        read:true
+      }
+    )
 
     res.json({
       success:true,
