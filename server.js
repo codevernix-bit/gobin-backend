@@ -533,6 +533,32 @@ app.patch("/api/read/:id", async(req,res)=>{
   }
 })
 
+
+app.patch("/api/trash/:id", async(req,res)=>{
+  try{
+
+    await Email.findByIdAndUpdate(
+      req.params.id,
+      {
+        folder:"trash",
+        read:true
+      }
+    )
+
+    res.json({
+      success:true,
+      message:"Email dipindah ke trash"
+    })
+
+  }catch(err){
+    console.log(err)
+
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+  }
+})
 /* =========================
    USER
 ========================= */
