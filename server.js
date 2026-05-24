@@ -465,7 +465,7 @@ app.get("/api/trash/:email", async(req,res)=>{
         { to:req.params.email },
         { from:req.params.email }
       ],
-      trash:true
+      folder:"trash"
     }).sort({ createdAt:-1 })
 
     res.json({ success:true, emails })
