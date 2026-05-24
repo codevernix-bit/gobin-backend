@@ -261,7 +261,7 @@ app.post("/api/send", upload.array("attachments", 5), async(req,res)=>{
   const brevoPayload = {
     sender:{
       name:"GoBin",
-      email:"binmailservice@gmail.com"
+      email:"codevernix@11289763.brevosend.com"
     },
 
     replyTo:{
