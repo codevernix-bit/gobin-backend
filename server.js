@@ -1,5 +1,7 @@
 require("dotenv").config()
 
+const { ImapFlow } = require("imapflow");
+const { simpleParser } = require("mailparser");
 const express = require("express")
 const mongoose = require("mongoose")
 const bcrypt = require("bcryptjs")
@@ -512,6 +514,112 @@ app.get("/api/user/:email", async(req,res)=>{
   }
 })
 
+
+/* =========================
+   IMAP SYNC
+========================= */
+
+let imapStarted = false
+
+function extractGobinAddress(parsed){
+  const all = []
+
+  if(parsed.to?.value) all.push(...parsed.to.value)
+  if(parsed.cc?.value) all.push(...parsed.cc.value)
+  if(parsed.headers?.get("x-forwarded-to")) all.push({ address: parsed.headers.get("x-forwarded-to") })
+  if(parsed.headers?.get("delivered-to")) all.push({ address: parsed.headers.get("delivered-to") })
+
+  const found = all
+    .map(x => String(x.address || x || "").trim().toLowerCase())
+    .find(email => email.endsWith("@gobin.id"))
+
+  return found || "admin@gobin.id"
+}
+
+async function syncGmailInbox(){
+  if(imapStarted) return
+  imapStarted = true
+
+  try{
+    if(!process.env.IMAP_USER || !process.env.IMAP_PASS){
+      console.log("IMAP not configured")
+      imapStarted = false
+      return
+    }
+
+    const client = new ImapFlow({
+      host: process.env.IMAP_HOST || "imap.gmail.com",
+      port: Number(process.env.IMAP_PORT || 993),
+      secure: String(process.env.IMAP_TLS || "true") === "true",
+      auth:{
+        user:process.env.IMAP_USER,
+        pass:process.env.IMAP_PASS
+      },
+      logger:false
+    })
+
+    await client.connect()
+    console.log("IMAP Connected")
+
+    const lock = await client.getMailboxLock("INBOX")
+
+    try{
+      const since = new Date(Date.now() - 1000 * 60 * 60 * 24 * 3)
+
+      for await (const msg of client.fetch(
+        { since },
+        { uid:true, source:true }
+      )){
+        const gmailUid = `gmail-${msg.uid}`
+
+        const exists = await Email.findOne({
+          external:true,
+          message:gmailUid
+        })
+
+        if(exists) continue
+
+        const parsed = await simpleParser(msg.source)
+
+        const cleanFrom =
+          parsed.from?.value?.[0]?.address?.toLowerCase() || "unknown"
+
+        const cleanTo = extractGobinAddress(parsed)
+
+        const cleanSubject = parsed.subject || "No Subject"
+
+        const cleanMessage =
+          parsed.text ||
+          parsed.html ||
+          ""
+
+        await Email.create({
+          from:cleanFrom,
+          to:cleanTo,
+          subject:cleanSubject,
+          message:cleanMessage,
+          folder:"inbox",
+          read:false,
+          external:true
+        })
+
+        console.log("IMAP saved:", cleanFrom, "=>", cleanTo, cleanSubject)
+      }
+    }finally{
+      lock.release()
+    }
+
+    await client.logout()
+    imapStarted = false
+
+  }catch(err){
+    imapStarted = false
+    console.log("IMAP ERROR:", err.message)
+  }
+}
+
+setInterval(syncGmailInbox, 60 * 1000)
+
 /* =========================
    SERVER
 ========================= */
@@ -521,6 +629,7 @@ async function startServer(){
     await mongoose.connect(process.env.MONGO_URI)
 
     console.log("MongoDB Connected")
+    syncGmailInbox()
 
     if(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS){
   console.log("SMTP configured")
