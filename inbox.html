@@ -112,17 +112,23 @@
   }
 
   .profile{
-    margin-top:10px;
-    padding-top:10px;
-  }
+  margin-top:0;
+  padding-top:0;
+  border-top:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
 
   .profile-name{
-    font-size:13px;
-  }
+  font-size:12px;
+  font-weight:600;
+}
 
-  .profile-email{
-    font-size:11px;
-  }
+.profile-email{
+  font-size:10px;
+}
 
   .main{
     flex:1;
@@ -226,9 +232,119 @@
     padding:12px;
   }
 }
+
+.mobile-header,
+.mobile-overlay{
+  display:none;
+}
+
+@media(max-width:768px){
+
+  .mobile-header{
+    height:54px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 14px;
+    background:white;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:80;
+  }
+
+  .mobile-menu-btn,
+  .mobile-avatar{
+    width:38px;
+    height:38px;
+    border:none;
+    border-radius:14px;
+    background:#f3f7ff;
+    color:#4285F4;
+    font-size:20px;
+    font-weight:700;
+  }
+
+  .mobile-brand{
+    font-size:24px;
+    font-weight:700;
+    letter-spacing:-1.5px;
+    color:#202124;
+  }
+
+  .sidebar{
+    position:fixed;
+    top:0;
+    left:-82%;
+    width:82%;
+    height:100dvh;
+    z-index:100;
+    padding:22px 18px;
+    transition:.28s ease;
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+  }
+
+  .sidebar.mobile-open{
+    left:0;
+  }
+
+  .mobile-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    z-index:90;
+  }
+
+  .mobile-overlay.show{
+    display:block;
+  }
+
+  .logo{
+    font-size:32px;
+    margin-bottom:22px;
+  }
+
+  .compose-btn{
+    margin-bottom:18px;
+  }
+
+  .menu{
+    flex-direction:column;
+    overflow:visible;
+  }
+
+  .menu a{
+    width:100%;
+    border-radius:14px;
+    justify-content:space-between;
+  }
+
+  .profile{
+    margin-top:auto;
+    padding-top:18px;
+    border-top:1px solid #e5e7eb;
+    display:block;
+  }
+
+  .topbar{
+    padding:12px;
+  }
+
+  .title-badge{
+    display:none;
+  }
+}
   </style>
 </head>
 <body>
+
+    <div class="mobile-header">
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+  <div class="mobile-brand">binmail</div>
+  <button class="mobile-avatar" onclick="toggleMobileMenu()">👤</button>
+</div>
+
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
 
   <div class="sidebar">
     <div class="logo">
@@ -302,8 +418,9 @@ document.querySelector(".profile-email").innerText = user.email || "user@gobin.i
 
 const logoutBtn = document.createElement("button")
 logoutBtn.innerText = "Logout"
-logoutBtn.style.marginTop = "14px"
-logoutBtn.style.width = "100%"
+logoutBtn.style.marginTop = "0"
+logoutBtn.style.width = "auto"
+logoutBtn.style.padding = "10px 14px"
 logoutBtn.style.padding = "12px"
 logoutBtn.style.border = "none"
 logoutBtn.style.borderRadius = "12px"
@@ -670,6 +787,11 @@ async function saveDraft(){
     console.log(err)
     alert("Server error")
   }
+}
+
+function toggleMobileMenu(){
+  document.querySelector(".sidebar").classList.toggle("mobile-open")
+  document.getElementById("mobileOverlay").classList.toggle("show")
 }
 
 loadMail("inbox")
