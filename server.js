@@ -596,6 +596,48 @@ app.patch("/api/trash-bulk", async(req,res)=>{
     })
   }
 })
+
+app.delete("/api/delete/:id", async(req,res)=>{
+  try{
+    await Email.findByIdAndDelete(req.params.id)
+
+    res.json({
+      success:true,
+      message:"Email dihapus permanen"
+    })
+
+  }catch(err){
+    console.log(err)
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+  }
+})
+
+app.delete("/api/delete-trash-all/:email", async(req,res)=>{
+  try{
+    await Email.deleteMany({
+      $or:[
+        { to:req.params.email },
+        { from:req.params.email }
+      ],
+      folder:"trash"
+    })
+
+    res.json({
+      success:true,
+      message:"Semua email Trash dihapus permanen"
+    })
+
+  }catch(err){
+    console.log(err)
+    res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+  }
+})
 /* =========================
    USER
 ========================= */
