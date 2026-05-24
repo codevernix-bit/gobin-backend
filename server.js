@@ -264,7 +264,7 @@ app.post("/api/send", upload.array("attachments", 5), async(req,res)=>{
         {
           sender:{
             name:"GoBin",
-            email:"codevernix@gmail.com"
+            email:"binmailservice@gmail.com"
           },
 
           replyTo:{
