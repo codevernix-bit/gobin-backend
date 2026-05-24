@@ -258,59 +258,62 @@ app.post("/api/send", upload.array("attachments", 5), async(req,res)=>{
     }
 
     if(external){
+  const brevoPayload = {
+    sender:{
+      name:"GoBin",
+      email:"binmailservice@gmail.com"
+    },
 
-      await axios.post(
-        "https://api.brevo.com/v3/smtp/email",
-        {
-          sender:{
-            name:"GoBin",
-            email:"binmailservice@gmail.com"
-          },
+    replyTo:{
+      email:cleanFrom,
+      name:"BinMail User"
+    },
 
-          replyTo:{
-          email:cleanFrom,
-          name:"BinMail User"
-         },
+    to:[
+      {
+        email:cleanTo
+      }
+    ],
 
-          to:[
-            {
-              email:cleanTo
-            }
-          ],
+    subject:cleanSubject,
 
-          subject:cleanSubject,
+    htmlContent:`
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+        <p style="font-size:13px;color:#6b7280">
+          From: <b>${cleanFrom}</b>
+        </p>
 
-          attachment: attachments.map(file => ({
-  url: `${req.protocol}://${req.get("host")}${file.path}`,
-  name: file.filename
-})),
+        <div style="white-space:pre-wrap">
+          ${escapeHtmlServer(cleanMessage)}
+        </div>
 
-          htmlContent:`
-            <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
-              <p style="font-size:13px;color:#6b7280">
-                From: <b>${cleanFrom}</b>
-              </p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
 
-              <div style="white-space:pre-wrap">
-                ${escapeHtmlServer(cleanMessage)}
-              </div>
+        <p style="font-size:12px;color:#6b7280">
+          Sent via BinMail / GoBin
+        </p>
+      </div>
+    `
+  }
 
-              <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0">
+  if(attachments.length > 0){
+    brevoPayload.attachment = attachments.map(file => ({
+      url:`${req.protocol}://${req.get("host")}${file.path}`,
+      name:file.filename
+    }))
+  }
 
-              <p style="font-size:12px;color:#6b7280">
-                Sent via BinMail / GoBin
-              </p>
-            </div>
-          `
-        },
-        {
-          headers:{
-            "api-key":process.env.BREVO_API_KEY,
-            "Content-Type":"application/json"
-          }
-        }
-      )
+  await axios.post(
+    "https://api.brevo.com/v3/smtp/email",
+    brevoPayload,
+    {
+      headers:{
+        "api-key":process.env.BREVO_API_KEY,
+        "Content-Type":"application/json"
+      }
     }
+  )
+}
 
     const newEmail = new Email({
       from:cleanFrom,
