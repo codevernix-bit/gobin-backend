@@ -169,7 +169,7 @@ app.post("/api/register", async(req,res)=>{
     if(existingUser){
       return res.status(400).json({
         success:false,
-        message:"Username sudah digunakan"
+        message:"username is already in use"
       })
     }
 
