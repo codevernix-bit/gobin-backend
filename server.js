@@ -80,10 +80,31 @@ function isExternalEmail(email){
 ========================= */
 
 const userSchema = new mongoose.Schema({
-  username:{ type:String, required:true, unique:true },
-  email:{ type:String, required:true, unique:true },
-  password:{ type:String, required:true },
-  createdAt:{ type:Date, default:Date.now }
+  username:{
+    type:String,
+    required:true,
+    unique:true,
+    lowercase:true,
+    trim:true
+  },
+
+  email:{
+    type:String,
+    required:true,
+    unique:true,
+    lowercase:true,
+    trim:true
+  },
+
+  password:{
+    type:String,
+    required:true
+  },
+
+  createdAt:{
+    type:Date,
+    default:Date.now
+  }
 })
 
 const User = mongoose.model("User", userSchema)
@@ -114,7 +135,13 @@ const Email = mongoose.model("Email", emailSchema)
 
 app.post("/api/register", async(req,res)=>{
   try{
-    const { username, password } = req.body
+
+    let { username, password } = req.body
+
+    username =
+      String(username || "")
+      .trim()
+      .toLowerCase()
 
     if(!username || !password){
       return res.status(400).json({
@@ -123,10 +150,20 @@ app.post("/api/register", async(req,res)=>{
       })
     }
 
+    if(!/^[a-z0-9._-]{3,30}$/.test(username)){
+      return res.status(400).json({
+        success:false,
+        message:"Username tidak valid"
+      })
+    }
+
     const email = `${username}@gobin.id`
 
     const existingUser = await User.findOne({
-      $or:[{ username }, { email }]
+      $or:[
+        { username:username },
+        { email:email }
+      ]
     })
 
     if(existingUser){
@@ -136,7 +173,8 @@ app.post("/api/register", async(req,res)=>{
       })
     }
 
-    const hashedPassword = await bcrypt.hash(password,10)
+    const hashedPassword =
+      await bcrypt.hash(password,10)
 
     const newUser = new User({
       username,
@@ -153,7 +191,16 @@ app.post("/api/register", async(req,res)=>{
     })
 
   }catch(err){
+
     console.log(err)
+
+    if(err.code === 11000){
+      return res.status(400).json({
+        success:false,
+        message:"Username sudah digunakan"
+      })
+    }
+
     res.status(500).json({
       success:false,
       message:"Server error"
@@ -163,14 +210,12 @@ app.post("/api/register", async(req,res)=>{
 
 app.post("/api/login", async(req,res)=>{
   try{
-    const { email, password } = req.body
+    let { email, password } = req.body
 
-    if(!email || !password){
-      return res.status(400).json({
-        success:false,
-        message:"Lengkapi data"
-      })
-    }
+email =
+  String(email || "")
+  .trim()
+  .toLowerCase()
 
     const user = await User.findOne({ email })
 
