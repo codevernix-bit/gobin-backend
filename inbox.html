@@ -451,6 +451,51 @@ body.dark-mode .mobile-avatar{
       </div>
     </div>
 
+  <div style="display:flex;gap:10px;padding:12px 20px;background:white;border-bottom:1px solid #e5e7eb;flex-wrap:wrap">
+
+  <button onclick="selectAllEmails()"
+    style="border:none;padding:10px 14px;border-radius:10px;background:#e5e7eb;cursor:pointer">
+    ☑ Select All
+  </button>
+
+  <button
+    onclick="currentFolder === 'trash' ? deleteAllTrash() : moveSelectedToTrash()"
+    style="border:none;padding:10px 14px;border-radius:10px;background:#ef4444;color:white;cursor:pointer">
+    🗑 Action
+  </button>
+
+  <button
+    onclick="window.open('https://binpay.asia/dashboard','_blank')"
+    style="
+      border:none;
+      padding:10px 16px;
+      border-radius:10px;
+      background:linear-gradient(90deg,#4f46e5,#3ddc84);
+      color:white;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow:0 8px 18px rgba(79,70,229,.18)
+    ">
+    🚀 Access BinPay
+  </button>
+
+  <button
+  onclick="enableNotification()"
+  style="
+    border:none;
+    padding:10px 16px;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+    font-weight:700;
+    box-shadow:0 8px 18px rgba(37,99,235,.18)
+  ">
+  🔔 Enable Notification
+</button>
+
+</div>
+
     <div class="mail-container" id="mailContainer"></div>
   </div>
 
@@ -474,12 +519,15 @@ body.dark-mode .mobile-avatar{
 <script>
 const API = "https://gobin-backend-production.up.railway.app"
 
-const user = JSON.parse(localStorage.getItem("binmailUser"))
+
 
 let currentFolder = "inbox"
 let currentEmails = []
 let currentShownEmails = []
 let unreadCount = 0
+let selectedEmails = []
+
+const user = JSON.parse(localStorage.getItem("binmailUser"))
 
 if(!user){
   window.location.href = "/mail"
@@ -599,13 +647,20 @@ function renderEmails(emails, keyword = ""){
     const unreadDot = (!mail.read && currentFolder === "inbox") ? " 🔴" : ""
 
     return `
-      <div class="mail-item ${unreadClass}" onclick="openEmail(${index})">
+  <div class="mail-item ${unreadClass}">
+    <input
+      type="checkbox"
+      class="mail-check"
+      onclick="event.stopPropagation(); toggleSelectEmail('${mail._id}', this.checked)">
+
+    <div style="flex:1" onclick="openEmail(${index})">
         <div class="mail-top">
           <div class="mail-name">${target}${unreadDot}</div>
           <div class="mail-time">${time}</div>
         </div>
         <div class="mail-subject">${subject}</div>
         <div class="mail-preview">${message || "(No message)"}</div>
+      </div>
       </div>
     `
   }).join("")
@@ -648,6 +703,16 @@ async function openEmail(index){
         <button class="back-btn" onclick="renderEmails(currentEmails, document.getElementById('searchInput').value)">
           ← Back
         </button>
+        ${
+  currentFolder === "trash"
+  ? `<button class="back-btn" onclick="deletePermanent('${mail._id}')">
+      ❌ Delete Permanen
+    </button>`
+
+  : `<button class="back-btn" onclick="moveToTrash('${mail._id}')">
+      🗑 Trash
+    </button>`
+}
 
         ${
           canReply
@@ -861,6 +926,153 @@ async function saveDraft(){
   }
 }
 
+async function moveToTrash(id){
+  if(!id) return
+
+  const ok = confirm("Pindahkan email ini ke Trash?")
+  if(!ok) return
+
+  try{
+    const res = await fetch(`${API}/api/trash/${id}`, {
+      method:"PATCH"
+    })
+
+    const data = await res.json()
+    alert(data.message)
+
+    if(data.success){
+      loadMail(currentFolder)
+      loadUnread()
+    }
+
+  }catch(err){
+    console.log(err)
+    alert("Gagal memindahkan email")
+  }
+}
+
+function toggleSelectEmail(id, checked){
+
+  if(checked){
+
+    if(!selectedEmails.includes(id)){
+      selectedEmails.push(id)
+    }
+
+  }else{
+
+    selectedEmails = selectedEmails.filter(item => item !== id)
+
+  }
+
+  console.log(selectedEmails)
+}
+
+
+function selectAllEmails(){
+  selectedEmails = currentShownEmails.map(mail => mail._id)
+
+  document.querySelectorAll(".mail-check").forEach(check => {
+    check.checked = true
+  })
+
+  console.log(selectedEmails)
+}
+
+async function moveSelectedToTrash(){
+  if(selectedEmails.length === 0){
+    alert("Pilih email dulu")
+    return
+  }
+
+  const ok = confirm(`Pindahkan ${selectedEmails.length} email ke Trash?`)
+  if(!ok) return
+
+  try{
+    const res = await fetch(`${API}/api/trash-bulk`, {
+      method:"PATCH",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        ids:selectedEmails
+      })
+    })
+
+    const data = await res.json()
+    alert(data.message)
+
+    if(data.success){
+      selectedEmails = []
+      loadMail(currentFolder)
+      loadUnread()
+    }
+
+  }catch(err){
+    console.log(err)
+    alert("Gagal memindahkan email")
+  }
+}
+
+async function deletePermanent(id){
+
+  if(!id) return
+
+  const ok = confirm("Hapus permanen email ini?")
+  if(!ok) return
+
+  try{
+
+    const res = await fetch(`${API}/api/delete/${id}`, {
+      method:"DELETE"
+    })
+
+    const data = await res.json()
+
+    alert(data.message)
+
+    if(data.success){
+      loadMail(currentFolder)
+    }
+
+  }catch(err){
+
+    console.log(err)
+    alert("Gagal hapus permanen")
+
+  }
+}
+
+async function deleteAllTrash(){
+
+  const ok = confirm("Hapus SEMUA email di Trash?")
+  if(!ok) return
+
+  try{
+
+    const res = await fetch(
+      `${API}/api/delete-trash-all/${encodeURIComponent(user.email)}`,
+      {
+        method:"DELETE"
+      }
+    )
+
+    const data = await res.json()
+
+    alert(data.message)
+
+    if(data.success){
+      loadMail("trash")
+    }
+
+  }catch(err){
+
+    console.log(err)
+    alert("Gagal hapus semua Trash")
+
+  }
+}
+
 function toggleMobileMenu(){
   document.querySelector(".sidebar").classList.toggle("mobile-open")
   document.getElementById("mobileOverlay").classList.toggle("show")
@@ -868,6 +1080,34 @@ function toggleMobileMenu(){
 
 function toggleDarkMode(){
   document.body.classList.toggle("dark-mode")
+}
+
+async function enableNotification(){
+
+  if(!("Notification" in window)){
+    alert("Browser tidak support notification")
+    return
+  }
+
+  const permission =
+    await Notification.requestPermission()
+
+  if(permission === "granted"){
+
+    alert("Notification enabled")
+
+    new Notification(
+      "BinMail Notification Active",
+      {
+        body:"You will receive BinMail alerts here."
+      }
+    )
+
+  }else{
+
+    alert("Notification permission denied")
+
+  }
 }
 
 loadMail("inbox")

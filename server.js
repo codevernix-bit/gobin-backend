@@ -838,6 +838,33 @@ async function syncGmailInbox(){
 
 setInterval(syncGmailInbox, 60 * 1000)
 
+app.get("/api/search", async (req, res) => {
+  const q = req.query.q;
+
+  if (!q) {
+    return res.status(400).json({ error: "Query is required" });
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=10`,
+      {
+        headers: {
+          "Accept": "application/json",
+          "X-Subscription-Token": process.env.BRAVE_API_KEY
+        }
+      }
+    );
+
+    const data = await response.json();
+    res.json(data);
+
+  } catch (err) {
+    console.error("Brave search error:", err);
+    res.status(500).json({ error: "Search failed" });
+  }
+});
+
 /* =========================
    SERVER
 ========================= */

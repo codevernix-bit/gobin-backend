@@ -29,13 +29,13 @@
     }
 
     body{
-      background:#f5f7fb;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
-    }
+  background:#f5f7fb;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:70px 20px 20px;
+}
 
     .card{
 
@@ -189,6 +189,30 @@
 
     }
 
+    @media (max-width:480px){
+  body{
+    padding-top:64px;
+    align-items:flex-start;
+  }
+
+  .card{
+    max-width:100%;
+    padding:34px 26px;
+    border-radius:22px;
+  }
+
+  .logo{
+    font-size:42px;
+  }
+
+  .title{
+    font-size:23px;
+  }
+
+  .subtitle{
+    margin-bottom:28px;
+  }
+}
   </style>
 
 </head>
@@ -215,9 +239,29 @@
       Welcome to BinMail
     </div>
 
-    <div class="subtitle">
-      Secure email powered by gobin
-    </div>
+    <div class="subtitle" style="font-size:15px">
+
+  Secure email powered by
+
+  <a
+    href="https://gobin.id/"
+    target="_blank"
+    style="
+  background:linear-gradient(90deg,#4285F4,#EA4335);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color:transparent;
+  text-decoration:none;
+  font-weight:700;
+  font-size:17px;
+  letter-spacing:0.4px;
+"
+  >
+    GoBin
+  </a>
+
+</div>
 
     <!-- FORM -->
 
@@ -318,9 +362,14 @@
       if(data.success){
 
         localStorage.setItem(
-          "binmailUser",
-          JSON.stringify(data.user)
-        )
+  "binmailUser",
+  JSON.stringify(data.user)
+)
+
+localStorage.setItem(
+  "binmailLoggedIn",
+  "true"
+)
 
         window.location.href =
         "/inbox"
